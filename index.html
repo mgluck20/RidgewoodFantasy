@@ -475,11 +475,20 @@ async function loadData() {
     // Transactions – robust JSON parsing
     // Transactions – robust JSON parsing with single-quote fix and better error handling
     transactions = csvToArray(t).map(row => {
-      const safeParse = (field) => {
-        let str = row[field] || '';
-        if (!str || str === 'null' || str.trim() === '' || str === '{}') {
-          return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
-        }
+          const safeParse = (field) => {
+      let str = row[field] || '';
+      if (!str || str === 'null' || str.trim() === '' || str === '{}') {
+        return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
+      }
+      str = str.replace(/'/g, '"');     // Handle any single quotes
+      str = str.replace(/""/g, '"');    // ← THIS FIXES YOUR ERRORS: removes duplicated quotes
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        addDebug(`JSON parse error in ${field} (week ${row.week || '?'}): ${str.substring(0, 100)}...`);
+        return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
+      }
+    };
         // Fix single quotes → double quotes
         str = str.replace(/'/g, '"');
         try {
@@ -750,4 +759,5 @@ window.onload = loadData;
 </script>
 </body>
 </html>
+
 
