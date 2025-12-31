@@ -4,195 +4,228 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sleeper Fantasy League Dashboard</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background-color: #f3f4f6; }
-    .card { background-color: #fff; border-radius: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1.5rem; }
-    .table th { background-color: #f9fafb; }
-    .leaderboard-rank { font-weight: bold; color: #1f2937; }
-    .highlight { color: #10b981; font-weight: bold; }
-    .week-section { margin-bottom: 2rem; }
+    body { font-family: 'Inter', sans-serif; }
+    .section { margin-bottom: 2rem; }
+    .card { @apply bg-white shadow-md rounded-2xl p-4 mb-4; }
+    .header { @apply text-xl font-bold mb-2; }
+    .table th, .table td { @apply px-4 py-2 border-b border-gray-200; }
+    .highlight { @apply bg-green-100 font-bold; }
+    .winner { @apply bg-yellow-100 font-bold; }
   </style>
 </head>
-<body class="p-6 font-sans">
-  <header class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-2">🏈 Sleeper Fantasy League Dashboard</h1>
-    <p class="text-gray-600">Real-time stats, standings, transactions, and bonuses.</p>
-  </header>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-7xl mx-auto">
+    <header class="mb-8">
+      <h1 class="text-4xl font-extrabold text-gray-800">🏈 Sleeper Fantasy League Dashboard</h1>
+      <p class="text-gray-600 mt-2">Live standings, leaders, and transactions for your league</p>
+    </header>
 
-  <!-- Money Leaderboard -->
-  <section class="card">
-    <h2 class="text-2xl font-semibold mb-4">💰 Money Leaderboard</h2>
-    <table class="table-auto w-full text-left border-collapse border border-gray-200">
-      <thead>
-        <tr>
-          <th class="border p-2">Rank</th>
-          <th class="border p-2">Owner</th>
-          <th class="border p-2">Team</th>
-          <th class="border p-2">Total Bonuses</th>
-          <th class="border p-2">Weekly Wins</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboard-body">
-        <tr><td colspan="5" class="text-center p-4 text-gray-500">Loading leaderboard...</td></tr>
-      </tbody>
-    </table>
-  </section>
+    <!-- MONEY LEADERBOARD -->
+    <section class="section" id="money-leaderboard">
+      <div class="card">
+        <h2 class="header">💰 Money Leaderboard</h2>
+        <table class="table w-full text-left">
+          <thead>
+            <tr class="bg-gray-200">
+              <th>Rank</th>
+              <th>Owner</th>
+              <th>Team</th>
+              <th>Total Bonuses</th>
+              <th>Weekly Wins</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <tr><td colspan="5" class="text-center py-4">Loading leaderboard...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- League Standings -->
-  <section class="card">
-    <h2 class="text-2xl font-semibold mb-4">📊 League Standings</h2>
-    <table class="table-auto w-full text-left border-collapse border border-gray-200">
-      <thead>
-        <tr>
-          <th class="border p-2">Rank</th>
-          <th class="border p-2">Owner</th>
-          <th class="border p-2">Team</th>
-          <th class="border p-2">W-L-T</th>
-          <th class="border p-2">Points For</th>
-          <th class="border p-2">Points Against</th>
-        </tr>
-      </thead>
-      <tbody id="standings-body">
-        <tr><td colspan="6" class="text-center p-4 text-gray-500">Loading standings...</td></tr>
-      </tbody>
-    </table>
-  </section>
+    <!-- LEAGUE STANDINGS -->
+    <section class="section" id="league-standings">
+      <div class="card">
+        <h2 class="header">📊 League Standings</h2>
+        <table class="table w-full text-left">
+          <thead>
+            <tr class="bg-gray-200">
+              <th>Rank</th>
+              <th>Owner</th>
+              <th>Team</th>
+              <th>W</th>
+              <th>L</th>
+              <th>T</th>
+              <th>Points For</th>
+              <th>Points Against</th>
+              <th>Win %</th>
+            </tr>
+          </thead>
+          <tbody id="standings-body">
+            <tr><td colspan="9" class="text-center py-4">Loading standings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- Weekly Winners -->
-  <section class="card">
-    <h2 class="text-2xl font-semibold mb-4">🏆 Weekly High Score Winners</h2>
-    <div id="weekly-winners" class="grid gap-4">
-      <p class="text-gray-500">Loading weekly winners...</p>
-    </div>
-  </section>
+    <!-- WEEKLY HIGH SCORERS -->
+    <section class="section" id="weekly-winners">
+      <div class="card">
+        <h2 class="header">🏆 Weekly High Score Winners</h2>
+        <table class="table w-full text-left">
+          <thead>
+            <tr class="bg-gray-200">
+              <th>Week</th>
+              <th>Owner</th>
+              <th>Team</th>
+              <th>Points</th>
+              <th>Bonus</th>
+            </tr>
+          </thead>
+          <tbody id="weekly-winners-body">
+            <tr><td colspan="5" class="text-center py-4">Loading weekly winners...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- Matchups -->
-  <section class="card">
-    <h2 class="text-2xl font-semibold mb-4">⚔️ Weekly Matchups</h2>
-    <div id="matchups" class="space-y-4">
-      <p class="text-gray-500">Loading matchups...</p>
-    </div>
-  </section>
+    <!-- RECENT TRANSACTIONS -->
+    <section class="section" id="recent-transactions">
+      <div class="card">
+        <h2 class="header">📝 Recent Transactions</h2>
+        <table class="table w-full text-left">
+          <thead>
+            <tr class="bg-gray-200">
+              <th>Week</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Rosters Involved</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="transactions-body">
+            <tr><td colspan="5" class="text-center py-4">Loading transactions...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- Recent Transactions -->
-  <section class="card">
-    <h2 class="text-2xl font-semibold mb-4">📝 Recent Transactions</h2>
-    <ul id="transactions-list" class="list-disc pl-5 space-y-2">
-      <li class="text-gray-500">Loading transactions...</li>
-    </ul>
-  </section>
+    <!-- WEEKLY MATCHUPS (optional expand/collapse) -->
+    <section class="section" id="weekly-matchups">
+      <div class="card">
+        <h2 class="header">📅 Weekly Matchups</h2>
+        <div id="matchups-container">
+          <p class="text-center py-4">Matchups will appear here.</p>
+        </div>
+      </div>
+    </section>
+  </div>
 
-  <!-- JavaScript to populate dashboard -->
   <script>
-    function populateLeaderboard(data) {
-      const tbody = document.getElementById('leaderboard-body');
-      tbody.innerHTML = '';
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-gray-500">No leaderboard data available</td></tr>';
-        return;
-      }
-      data.forEach(entry => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="border p-2 leaderboard-rank">${entry.rank}</td>
-          <td class="border p-2">${entry.display_name}</td>
-          <td class="border p-2">${entry.team_name}</td>
-          <td class="border p-2">$${entry.total_bonuses}</td>
-          <td class="border p-2">${entry.wins}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+    // =====================
+    // DATA FETCH FUNCTIONS
+    // =====================
 
-    function populateStandings(data) {
-      const tbody = document.getElementById('standings-body');
-      tbody.innerHTML = '';
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">No standings available</td></tr>';
-        return;
-      }
-      data.forEach(entry => {
-        const tr = document.createElement('tr');
-        const record = `${entry.wins}-${entry.losses}${entry.ties > 0 ? '-' + entry.ties : ''}`;
-        tr.innerHTML = `
-          <td class="border p-2 leaderboard-rank">${entry.rank}</td>
-          <td class="border p-2">${entry.display_name}</td>
-          <td class="border p-2">${entry.team_name}</td>
-          <td class="border p-2">${record}</td>
-          <td class="border p-2">${entry.points_for.toFixed(2)}</td>
-          <td class="border p-2">${entry.points_against.toFixed(2)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function populateWeeklyWinners(data) {
-      const container = document.getElementById('weekly-winners');
-      container.innerHTML = '';
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p class="text-gray-500">No weekly winners yet</p>';
-        return;
-      }
-      data.forEach(w => {
-        const div = document.createElement('div');
-        div.className = 'p-4 bg-green-50 rounded-md';
-        div.innerHTML = `<strong>Week ${w.week}</strong>: ${w.display_name} (${w.team_name}) scored <span class="highlight">${w.points}</span> points, won $${w.amount}`;
-        container.appendChild(div);
-      });
-    }
-
-    function populateTransactions(data) {
-      const ul = document.getElementById('transactions-list');
-      ul.innerHTML = '';
-      if (!data || data.length === 0) {
-        ul.innerHTML = '<li class="text-gray-500">No transactions yet</li>';
-        return;
-      }
-      data.forEach(t => {
-        const li = document.createElement('li');
-        const date = new Date(t.timestamp).toLocaleDateString();
-        li.textContent = `Week ${t.week}: ${t.type.toUpperCase()} (${t.status}) - ${date}, ${t.roster_count} roster(s)`;
-        ul.appendChild(li);
-      });
-    }
-
-    function populateMatchups(data) {
-      const container = document.getElementById('matchups');
-      container.innerHTML = '';
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p class="text-gray-500">No matchups yet</p>';
-        return;
-      }
-      data.forEach(week => {
-        const section = document.createElement('div');
-        section.className = 'week-section';
-        const title = document.createElement('h3');
-        title.className = 'font-semibold mb-2';
-        title.textContent = `Week ${week.week}`;
-        section.appendChild(title);
-        week.matchups.forEach(m => {
-          const p = document.createElement('p');
-          p.textContent = `${m.roster_name}: ${m.points} pts ${m.win ? '(Win)' : ''}`;
-          section.appendChild(p);
+    function loadLeaderboard() {
+      google.script.run.withSuccessHandler(data => {
+        const tbody = document.getElementById('leaderboard-body');
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No data</td></tr>';
+          return;
+        }
+        data.forEach(entry => {
+          tbody.innerHTML += `<tr class='${entry.total_bonuses > 0 ? "highlight" : ""}'>
+            <td>${entry.rank}</td>
+            <td>${entry.display_name}</td>
+            <td>${entry.team_name}</td>
+            <td>$${entry.total_bonuses}</td>
+            <td>${entry.wins}</td>
+          </tr>`;
         });
-        container.appendChild(section);
-      });
+      }).getMoneyLeaderboard();
     }
 
-    // Dummy data injection (replace with google.script.run calls)
-    const leaderboardData = window.leaderboard || [];
-    const standingsData = window.standings || [];
-    const winnersData = window.weeklyWinners || [];
-    const transactionsData = window.recentTransactions || [];
-    const matchupsData = window.matchups || [];
+    function loadStandings() {
+      google.script.run.withSuccessHandler(data => {
+        const tbody = document.getElementById('standings-body');
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No data</td></tr>';
+          return;
+        }
+        data.forEach(entry => {
+          tbody.innerHTML += `<tr>
+            <td>${entry.rank}</td>
+            <td>${entry.display_name}</td>
+            <td>${entry.team_name}</td>
+            <td>${entry.wins}</td>
+            <td>${entry.losses}</td>
+            <td>${entry.ties}</td>
+            <td>${entry.points_for.toFixed(2)}</td>
+            <td>${entry.points_against.toFixed(2)}</td>
+            <td>${(entry.win_pct*100).toFixed(1)}%</td>
+          </tr>`;
+        });
+      }).getLeagueStandings();
+    }
 
-    populateLeaderboard(leaderboardData);
-    populateStandings(standingsData);
-    populateWeeklyWinners(winnersData);
-    populateTransactions(transactionsData);
-    populateMatchups(matchupsData);
+    function loadWeeklyWinners() {
+      google.script.run.withSuccessHandler(data => {
+        const tbody = document.getElementById('weekly-winners-body');
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No weekly winners yet</td></tr>';
+          return;
+        }
+        data.forEach(entry => {
+          tbody.innerHTML += `<tr class='winner'>
+            <td>${entry.week}</td>
+            <td>${entry.display_name}</td>
+            <td>${entry.team_name}</td>
+            <td>${entry.points}</td>
+            <td>$${entry.amount}</td>
+          </tr>`;
+        });
+      }).getAllWeeklyWinners();
+    }
+
+    function loadTransactions() {
+      google.script.run.withSuccessHandler(data => {
+        const tbody = document.getElementById('transactions-body');
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No transactions yet</td></tr>';
+          return;
+        }
+        data.forEach(t => {
+          const date = new Date(t.timestamp).toLocaleDateString();
+          tbody.innerHTML += `<tr>
+            <td>${t.week}</td>
+            <td>${t.type}</td>
+            <td>${t.status}</td>
+            <td>${t.roster_count}</td>
+            <td>${date}</td>
+          </tr>`;
+        });
+      }).getRecentTransactions(20);
+    }
+
+    function loadMatchups() {
+      // Optional: implement getWeeklyMatchups() in code.gs if desired
+      const container = document.getElementById('matchups-container');
+      container.innerHTML = '<p class="text-center py-4">Matchups not yet implemented.</p>';
+    }
+
+    // =====================
+    // INITIAL LOAD
+    // =====================
+    loadLeaderboard();
+    loadStandings();
+    loadWeeklyWinners();
+    loadTransactions();
+    loadMatchups();
+
   </script>
 </body>
 </html>
