@@ -25,6 +25,7 @@ tr:hover { background:#e0e7ff; }
 .filter-container label { font-weight:bold; }
 .filter-container select { padding:0.3rem; }
 .summary-box { background:#e0f2fe; padding:0.8rem; border-radius:6px; margin:0.5rem 0; font-weight:bold; display:inline-block; }
+#debug-info { margin-top:2rem; padding:1rem; background:#fff3cd; border:1px solid #ffc107; border-radius:4px; font-family:monospace; font-size:0.85rem; white-space:pre-wrap; }
 </style>
 </head>
 <body>
@@ -106,6 +107,7 @@ tr:hover { background:#e0e7ff; }
 </div>
 
 <div id="last-updated"></div>
+<div id="debug-info"></div>
 </main>
 
 <script>
@@ -117,40 +119,94 @@ const URL_WEEKLY_BONUSES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-P
 const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1937108615&single=true&output=csv';
 
 let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=0;
+let debugLog = [];
+
+function addDebug(msg) {
+  debugLog.push(msg);
+  const debugEl = document.getElementById('debug-info');
+  if(debugEl) debugEl.textContent = debugLog.join('\n');
+  console.log(msg);
+}
 
 function csvToArray(csv){
   const lines = csv.trim().split('\n');
   const headers = lines[0].split(',').map(h=>h.trim());
   return lines.slice(1).map(line=>{
+    // Handle quoted fields that may contain commas
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    for(let i=0; i<line.length; i++){
+      const char = line[i];
+      if(char === '"') inQuotes = !inQuotes;
+      else if(char === ',' && !inQuotes){
+        values.push(current.trim());
+        current = '';
+      } else current += char;
+    }
+    values.push(current.trim());
+    
     const obj={};
-    line.split(',').forEach((v,i)=>obj[headers[i]]=v.trim());
+    headers.forEach((h,i)=>obj[h]=(values[i]||'').replace(/^"|"$/g,'').trim());
     return obj;
   });
 }
 
 async function loadData(){
-  const [ownersCsv, rostersCsv, bonusesCsv, matchupsCsv, transactionsCsv, configCsv] = await Promise.all([
-    fetch(URL_OWNERS).then(r=>r.text()),
-    fetch(URL_ROSTERS).then(r=>r.text()),
-    fetch(URL_WEEKLY_BONUSES).then(r=>r.text()),
-    fetch(URL_WEEKLY_MATCHUPS).then(r=>r.text()),
-    fetch(URL_TRANSACTIONS).then(r=>r.text()),
-    fetch(URL_CONFIG).then(r=>r.text())
-  ]);
+  try {
+    addDebug('Starting data load...');
+    
+    const [ownersCsv, rostersCsv, bonusesCsv, matchupsCsv, transactionsCsv, configCsv] = await Promise.all([
+      fetch(URL_OWNERS).then(r=>r.text()),
+      fetch(URL_ROSTERS).then(r=>r.text()),
+      fetch(URL_WEEKLY_BONUSES).then(r=>r.text()),
+      fetch(URL_WEEKLY_MATCHUPS).then(r=>r.text()),
+      fetch(URL_TRANSACTIONS).then(r=>r.text()),
+      fetch(URL_CONFIG).then(r=>r.text())
+    ]);
+    
+    addDebug('All CSVs fetched successfully');
 
-  csvToArray(ownersCsv).forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'Unknown' });
-  csvToArray(rostersCsv).forEach(r=>rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) });
-  bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0)}));
-  matchups = csvToArray(matchupsCsv).map(m=>({...m, week:Number(m.week||0), score:m.score||0}));
-  transactions = csvToArray(transactionsCsv);
+    // Parse owners and log for debugging
+    const ownersArray = csvToArray(ownersCsv);
+    addDebug(`Owners loaded: ${ownersArray.length} entries`);
+    addDebug(`Owner columns: ${Object.keys(ownersArray[0] || {}).join(', ')}`);
+    addDebug(`First owner sample: ${JSON.stringify(ownersArray[0])}`);
+    
+    ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'Unknown' });
+    addDebug(`Owner IDs in map: ${Object.keys(owners).join(', ')}`);
+    
+    csvToArray(rostersCsv).forEach(r=>rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) });
+    
+    bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0)}));
+    
+    // Parse matchups and log for debugging
+    const matchupsArray = csvToArray(matchupsCsv);
+    addDebug(`Matchups loaded: ${matchupsArray.length} entries`);
+    addDebug(`Matchup columns: ${Object.keys(matchupsArray[0] || {}).join(', ')}`);
+    addDebug(`First matchup sample: ${JSON.stringify(matchupsArray[0])}`);
+    matchups = matchupsArray.map(m=>({...m, week:Number(m.week||0), score:m.score||0}));
+    
+    // Parse transactions and log for debugging
+    const transactionsArray = csvToArray(transactionsCsv);
+    addDebug(`Transactions loaded: ${transactionsArray.length} entries`);
+    addDebug(`Transaction columns: ${Object.keys(transactionsArray[0] || {}).join(', ')}`);
+    addDebug(`First transaction sample: ${JSON.stringify(transactionsArray[0])}`);
+    transactions = transactionsArray;
 
-  const configRows = csvToArray(configCsv);
-  const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
-  lastWeek = weekRow ? Number(weekRow.Value||0) : 0;
-  document.getElementById('last-updated').textContent = lastWeek>0?`Week ${lastWeek} processed`:'No weeks processed yet';
+    const configRows = csvToArray(configCsv);
+    const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
+    lastWeek = weekRow ? Number(weekRow.Value||0) : 0;
+    document.getElementById('last-updated').textContent = lastWeek>0?`Week ${lastWeek} processed`:'No weeks processed yet';
 
-  populateWeekFilters();
-  loadHome(); loadStandings(); loadMatchups(); loadTransactions();
+    populateWeekFilters();
+    loadHome(); loadStandings(); loadMatchups(); loadTransactions();
+    
+    addDebug('✓ Data load complete!');
+  } catch(error) {
+    addDebug(`ERROR: ${error.message}`);
+    console.error('Load error:', error);
+  }
 }
 
 function populateWeekFilters(){
@@ -184,7 +240,7 @@ function loadHome(){
     totalPaid+=l.total;
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${i+1}</td><td>${l.owner.display_name}</td><td>${l.owner.team_name}</td><td>${l.wins}</td><td>$${l.total}</td>`;
-    if(i<3) tr.style.background='#fde68a'; // highlight top 3
+    if(i<3) tr.style.background='#fde68a';
     tbody.appendChild(tr);
   });
   document.getElementById('total-bonuses').textContent=`Total Bonuses Paid: $${totalPaid}`;
