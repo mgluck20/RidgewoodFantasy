@@ -9,34 +9,55 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { 
   font-family:'Inter',sans-serif; 
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
   color:#fff; 
   min-height:100vh;
 }
 
 header { 
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px);
   padding:2rem 1rem; 
   text-align:center;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  position:relative;
 }
 
 header h1 { 
   font-size:2.5rem; 
   font-weight:800; 
   letter-spacing:-1px;
-  background: linear-gradient(to right, #ffd89b, #19547b);
+  background: linear-gradient(to right, #00d4ff, #00ffbb);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.sleeper-link {
+  position:absolute;
+  right:2rem;
+  top:50%;
+  transform:translateY(-50%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
+  color:#0f2027;
+  padding:0.75rem 1.5rem;
+  border-radius:12px;
+  text-decoration:none;
+  font-weight:700;
+  font-size:0.9rem;
+  transition: all 0.3s ease;
+}
+
+.sleeper-link:hover {
+  transform:translateY(-50%) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,212,255,0.4);
 }
 
 nav { 
   display:flex; 
   justify-content:center; 
   gap:0.5rem; 
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.3);
   backdrop-filter: blur(10px);
   padding:1rem; 
   flex-wrap:wrap;
@@ -49,8 +70,8 @@ nav button {
   color:white; 
   font-weight:600; 
   cursor:pointer; 
-  font-size:0.95rem; 
-  padding:0.75rem 1.5rem;
+  font-size:0.9rem; 
+  padding:0.75rem 1.25rem;
   border-radius:12px;
   transition: all 0.3s ease;
   position:relative;
@@ -61,7 +82,7 @@ nav button::before {
   content:'';
   position:absolute;
   top:0; left:0; right:0; bottom:0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,255,187,0));
   opacity:0;
   transition: opacity 0.3s ease;
 }
@@ -70,12 +91,13 @@ nav button:hover::before { opacity:1; }
 nav button:hover { 
   background: rgba(255,255,255,0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 nav button.active { 
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
+  color:#0f2027;
+  box-shadow: 0 4px 15px rgba(0,212,255,0.4);
 }
 
 main { 
@@ -97,28 +119,29 @@ main {
   content:'';
   width:4px;
   height:30px;
-  background: linear-gradient(to bottom, #ffd89b, #19547b);
+  background: linear-gradient(to bottom, #00d4ff, #00ffbb);
   border-radius:2px;
 }
 
 .card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
   border-radius:20px;
   padding:2rem;
   margin-bottom:2rem;
-  border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
 #winner-box { 
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
+  color:#0f2027;
   padding:2rem; 
   border-radius:20px; 
   margin-bottom:2rem; 
   font-weight:600; 
   font-size:1.3rem;
-  box-shadow: 0 8px 32px rgba(245,87,108,0.3);
+  box-shadow: 0 8px 32px rgba(0,212,255,0.3);
   position:relative;
   overflow:hidden;
 }
@@ -130,7 +153,7 @@ main {
   top:50%;
   transform:translateY(-50%);
   font-size:4rem;
-  opacity:0.3;
+  opacity:0.2;
 }
 
 .stats-grid {
@@ -141,18 +164,18 @@ main {
 }
 
 .stat-card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
   border-radius:16px;
   padding:1.5rem;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.15);
   text-align:center;
 }
 
 .stat-value {
   font-size:2.5rem;
   font-weight:800;
-  background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -178,7 +201,7 @@ table th, table td {
 }
 
 table th { 
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.12);
   color:white; 
   cursor:pointer; 
   user-select:none;
@@ -186,46 +209,42 @@ table th {
   text-transform:uppercase;
   font-size:0.85rem;
   letter-spacing:0.5px;
-  border-bottom: 2px solid rgba(255,255,255,0.3);
+  border-bottom: 2px solid rgba(0,212,255,0.5);
   position:sticky;
   top:0;
   z-index:10;
 }
 
 table th:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.18);
 }
 
 table tbody tr { 
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.04);
   transition: all 0.2s ease;
 }
 
 table tbody tr:hover { 
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.12);
   transform: scale(1.01);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 table tbody tr td {
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
-
-table tbody tr:first-child td:first-child { border-top-left-radius:12px; }
-table tbody tr:first-child td:last-child { border-top-right-radius:12px; }
-table tbody tr:last-child td:first-child { border-bottom-left-radius:12px; }
-table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
 
 .rank-badge {
   display:inline-block;
   width:32px;
   height:32px;
   border-radius:50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   text-align:center;
   line-height:32px;
   font-weight:700;
   font-size:0.9rem;
+  color:#0f2027;
 }
 
 .rank-1 { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color:#000; }
@@ -236,7 +255,7 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
   width:40px;
   height:40px;
   border-radius:50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -245,6 +264,7 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
   margin-right:0.75rem;
   vertical-align:middle;
   border: 2px solid rgba(255,255,255,0.3);
+  color:#0f2027;
 }
 
 .team-cell {
@@ -294,11 +314,11 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
 }
 
 .filter-container select:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
 }
 
 .filter-container select option {
-  background:#764ba2;
+  background:#203a43;
   color:white;
 }
 
@@ -320,10 +340,35 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
   text-transform:uppercase;
 }
 
-.transaction-waiver { background: rgba(52, 211, 153, 0.3); color:#34d399; }
-.transaction-trade { background: rgba(251, 146, 60, 0.3); color:#fb923c; }
-.transaction-add { background: rgba(96, 165, 250, 0.3); color:#60a5fa; }
-.transaction-drop { background: rgba(239, 68, 68, 0.3); color:#ef4444; }
+.transaction-waiver { background: rgba(0, 212, 255, 0.3); color:#00d4ff; }
+.transaction-trade { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
+.transaction-free_agent { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
+.transaction-add, .transaction-drop { background: rgba(255,255,255,0.15); color:#fff; }
+
+.playoff-bracket {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border-radius:20px;
+  padding:3rem;
+  text-align:center;
+  min-height:400px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.playoff-placeholder {
+  font-size:4rem;
+  margin-bottom:1rem;
+  opacity:0.3;
+}
+
+.playoff-text {
+  font-size:1.5rem;
+  font-weight:600;
+  opacity:0.7;
+}
 
 #last-updated {
   text-align:center;
@@ -336,7 +381,7 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
 #debug-info { 
   margin-top:2rem; 
   padding:1rem; 
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px);
   border:1px solid rgba(255,255,255,0.2); 
   border-radius:12px; 
@@ -357,13 +402,14 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
 ::-webkit-scrollbar { width:10px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius:10px; }
 ::-webkit-scrollbar-thumb { 
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   border-radius:10px; 
 }
-::-webkit-scrollbar-thumb:hover { background: #764ba2; }
+::-webkit-scrollbar-thumb:hover { background: #00d4ff; }
 
 @media (max-width: 768px) {
   header h1 { font-size:1.8rem; }
+  .sleeper-link { position:static; transform:none; margin-top:1rem; display:inline-block; }
   .section-title { font-size:1.4rem; }
   table { font-size:0.85rem; }
   table th, table td { padding:0.75rem 0.5rem; }
@@ -375,6 +421,7 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
 
 <header>
   <h1>⚡ Ridgewood Fantasy 2026 ⚡</h1>
+  <a href="https://sleeper.com/leagues/1127785690072428544" target="_blank" class="sleeper-link">Open in Sleeper</a>
 </header>
 
 <nav>
@@ -382,6 +429,8 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
   <button onclick="showPage('standings')">Standings</button>
   <button onclick="showPage('matchups')">Matchups</button>
   <button onclick="showPage('transactions')">Transactions</button>
+  <button onclick="showPage('playoffs')">Playoffs</button>
+  <button onclick="showPage('trending')">Trending</button>
 </nav>
 
 <main>
@@ -427,9 +476,13 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
 <div id="matchups" class="page" style="display:none">
   <div class="section-title">Weekly Matchups</div>
   <div class="filter-container">
-    <label for="matchup-week">Filter by Week:</label>
+    <label for="matchup-week">Week:</label>
     <select id="matchup-week" onchange="filterMatchups()">
       <option value="all">All Weeks</option>
+    </select>
+    <label for="matchup-team">Team:</label>
+    <select id="matchup-team" onchange="filterMatchups()">
+      <option value="all">All Teams</option>
     </select>
   </div>
   <div class="card">
@@ -450,7 +503,7 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
 <div id="transactions" class="page" style="display:none">
   <div class="section-title">Recent Transactions</div>
   <div class="filter-container">
-    <label for="trans-week">Filter by Week:</label>
+    <label for="trans-week">Week:</label>
     <select id="trans-week" onchange="filterTransactions()">
       <option value="all">All Weeks</option>
     </select>
@@ -461,11 +514,30 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
         <tr>
           <th>Week</th>
           <th>Team</th>
-          <th>Transaction</th>
+          <th>Type</th>
+          <th>Details</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+  </div>
+</div>
+
+<div id="playoffs" class="page" style="display:none">
+  <div class="section-title">Playoff Bracket</div>
+  <div class="card">
+    <div class="playoff-bracket">
+      <div class="playoff-placeholder">🏈</div>
+      <div class="playoff-text">Playoff bracket coming soon!</div>
+      <div style="margin-top:1rem; opacity:0.5; font-size:1rem;">Available during playoff weeks</div>
+    </div>
+  </div>
+</div>
+
+<div id="trending" class="page" style="display:none">
+  <div class="section-title">Trending Players</div>
+  <div class="card">
+    <div id="trending-players">Loading trending players...</div>
   </div>
 </div>
 
@@ -480,9 +552,12 @@ const URL_ROSTERS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sH
 const URL_WEEKLY_MATCHUPS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=425633695&single=true&output=csv';
 const URL_WEEKLY_BONUSES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1704595399&single=true&output=csv';
 const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1937108615&single=true&output=csv';
+const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
+const SLEEPER_TRENDING_URL = 'https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=25';
 
 let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=0;
 let rosterToOwner = {};
+let sleeperPlayers = {};
 let debugLog = [];
 
 function addDebug(msg) {
@@ -492,13 +567,19 @@ function addDebug(msg) {
   console.log(msg);
 }
 
+function getTeamName(owner) {
+  if (!owner) return 'Unknown';
+  if (owner.team_name && owner.team_name !== 'Unknown' && owner.team_name.trim() !== '') return owner.team_name.trim();
+  return `Team ${owner.display_name}`;
+}
+
 function getTeamInitials(teamName) {
   return teamName.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase();
 }
 
 function getTeamColor(teamName) {
   const colors = [
-    ['#667eea', '#764ba2'], ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'],
+    ['#00d4ff', '#00ffbb'], ['#ff6b6b', '#ff8787'], ['#4facfe', '#00f2fe'],
     ['#43e97b', '#38f9d7'], ['#fa709a', '#fee140'], ['#30cfd0', '#330867'],
     ['#a8edea', '#fed6e3'], ['#ff9a9e', '#fecfef']
   ];
@@ -510,6 +591,12 @@ function createTeamLogo(teamName) {
   const initials = getTeamInitials(teamName);
   const [color1, color2] = getTeamColor(teamName);
   return `<div class="team-logo" style="background: linear-gradient(135deg, ${color1} 0%, ${color2} 100%);">${initials}</div>`;
+}
+
+function getPlayerName(playerId) {
+  const player = sleeperPlayers[playerId];
+  if (!player) return playerId || 'Unknown Player';
+  return `${player.first_name || ''} ${player.last_name || ''}`.trim() || playerId;
 }
 
 function csvToArray(csv){
@@ -535,9 +622,52 @@ function csvToArray(csv){
   });
 }
 
+async function loadSleeperPlayers() {
+  try {
+    const response = await fetch(SLEEPER_PLAYERS_URL);
+    sleeperPlayers = await response.json();
+    addDebug(`Loaded ${Object.keys(sleeperPlayers).length} Sleeper players`);
+  } catch(error) {
+    addDebug(`Error loading Sleeper players: ${error.message}`);
+  }
+}
+
+async function loadTrendingPlayers() {
+  try {
+    const response = await fetch(SLEEPER_TRENDING_URL);
+    const trending = await response.json();
+    const container = document.getElementById('trending-players');
+    
+    if (!trending || trending.length === 0) {
+      container.innerHTML = '<p style="text-align:center; opacity:0.7;">No trending players available</p>';
+      return;
+    }
+    
+    let html = '<table style="width:100%;"><thead><tr><th>Rank</th><th>Player</th><th>Position</th><th>Team</th><th>Adds</th></tr></thead><tbody>';
+    trending.forEach((item, i) => {
+      const player = sleeperPlayers[item.player_id] || {};
+      const fullName = `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown';
+      html += `<tr>
+        <td><span class="rank-badge">${i+1}</span></td>
+        <td style="font-weight:600;">${fullName}</td>
+        <td>${player.position || 'N/A'}</td>
+        <td>${player.team || 'N/A'}</td>
+        <td style="color:#00ffbb; font-weight:700;">+${item.count || 0}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch(error) {
+    document.getElementById('trending-players').innerHTML = `<p style="text-align:center; opacity:0.7;">Error loading trending players</p>`;
+    addDebug(`Error loading trending: ${error.message}`);
+  }
+}
+
 async function loadData(){
   try {
     addDebug('Starting data load...');
+    
+    await loadSleeperPlayers();
     
     const [ownersCsv, rostersCsv, bonusesCsv, matchupsCsv, transactionsCsv, configCsv] = await Promise.all([
       fetch(URL_OWNERS).then(r=>r.text()),
@@ -551,39 +681,34 @@ async function loadData(){
     addDebug('All CSVs fetched successfully');
 
     const ownersArray = csvToArray(ownersCsv);
-    addDebug(`Owners loaded: ${ownersArray.length} entries`);
-    
-    ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'Unknown' });
-    addDebug(`Owner IDs in map: ${Object.keys(owners).join(', ')}`);
+    ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'' });
     
     const rostersArray = csvToArray(rostersCsv);
-    addDebug(`Rosters loaded: ${rostersArray.length} entries`);
-    
     rostersArray.forEach(r=>{
       rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) };
       if(r.roster_id && r.owner_id) {
         rosterToOwner[r.roster_id] = r.owner_id;
       }
     });
-    addDebug(`Roster-to-Owner mapping: ${JSON.stringify(rosterToOwner)}`);
     
     bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0)}));
     
-    const matchupsArray = csvToArray(matchupsCsv);
-    addDebug(`Matchups loaded: ${matchupsArray.length} entries`);
-    matchups = matchupsArray.map(m=>({...m, week:Number(m.week||0), score:m.score||0}));
+    matchups = csvToArray(matchupsCsv).map(m=>({...m, week:Number(m.week||0), points:Number(m.points||0)}));
     
-    const transactionsArray = csvToArray(transactionsCsv);
-    addDebug(`Transactions loaded: ${transactionsArray.length} entries`);
-    transactions = transactionsArray;
+    transactions = csvToArray(transactionsCsv);
 
     const configRows = csvToArray(configCsv);
     const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
     lastWeek = weekRow ? Number(weekRow.Value||0) : 0;
-    document.getElementById('last-updated').textContent = lastWeek>0?`Last Updated: Week ${lastWeek}`:'No weeks processed yet';
+    document.getElementById('last-updated').textContent = lastWeek > 0 ? `Last Updated: Week ${lastWeek}` : '';
 
     populateWeekFilters();
-    loadHome(); loadStandings(); loadMatchups(); loadTransactions();
+    populateTeamFilter();
+    loadHome(); 
+    loadStandings(); 
+    loadMatchups(); 
+    loadTransactions();
+    loadTrendingPlayers();
     
     addDebug('✓ Data load complete!');
   } catch(error) {
@@ -593,28 +718,43 @@ async function loadData(){
 }
 
 function populateWeekFilters(){
-  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>Number(t.week))])).sort((a,b)=>a-b);
+  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>Number(t.week||0))])).sort((a,b)=>a-b);
   const matchupSelect = document.getElementById('matchup-week');
   const transSelect = document.getElementById('trans-week');
   weeks.forEach(w=>{
-    const opt1=document.createElement('option'); opt1.value=w; opt1.text=`Week ${w}`; matchupSelect.appendChild(opt1);
-    const opt2=document.createElement('option'); opt2.value=w; opt2.text=`Week ${w}`; transSelect.appendChild(opt2);
+    if(w > 0){
+      const opt1=document.createElement('option'); opt1.value=w; opt1.text=`Week ${w}`; matchupSelect.appendChild(opt1);
+      const opt2=document.createElement('option'); opt2.value=w; opt2.text=`Week ${w}`; transSelect.appendChild(opt2);
+    }
+  });
+}
+
+function populateTeamFilter(){
+  const teamSelect = document.getElementById('matchup-team');
+  Object.values(owners).sort((a,b)=>getTeamName(a).localeCompare(getTeamName(b))).forEach(o=>{
+    const teamName = getTeamName(o);
+    const opt = document.createElement('option');
+    opt.value = teamName;
+    opt.text = teamName;
+    teamSelect.appendChild(opt);
   });
 }
 
 function loadHome(){
   const latest = bonuses.sort((a,b)=>b.week-a.week)[0];
   const winnerBox = document.getElementById('winner-box');
-  if(latest){
-    const owner = owners[latest.owner_id]||{ display_name:'Unknown', team_name:'Unknown' };
-    winnerBox.innerHTML = `${createTeamLogo(owner.team_name)} <span style="vertical-align:middle;">${owner.display_name} (${owner.team_name}) won <strong>$${latest.amount}</strong> in Week ${latest.week}!</span>`;
-  } else winnerBox.textContent='No winners yet';
+  if(latest && latest.owner_id){
+    const owner = owners[latest.owner_id] || { display_name:'Unknown', team_name:'' };
+    const teamName = getTeamName(owner);
+    winnerBox.innerHTML = `${createTeamLogo(teamName)} <span style="vertical-align:middle;">${owner.display_name} (${teamName}) won <strong>$${latest.amount}</strong> in Week ${latest.week}!</span>`;
+  } else {
+    winnerBox.textContent='No winners yet';
+  }
 
   const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
   const totalTeams = Object.keys(owners).length;
   const totalWeeks = lastWeek;
-  const avgPayout = totalPaid / (totalWeeks || 1);
-  
+
   const statsGrid = document.getElementById('stats-grid');
   statsGrid.innerHTML = `
     <div class="stat-card">
@@ -629,69 +769,72 @@ function loadHome(){
       <div class="stat-value">${totalWeeks}</div>
       <div class="stat-label">Weeks Played</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value">$${avgPayout.toFixed(0)}</div>
-      <div class="stat-label">Avg per Week</div>
-    </div>
   `;
 
-  const moneyMap={};
-  bonuses.forEach(b=>{
-    if(!moneyMap[b.owner_id]) moneyMap[b.owner_id]={ total:0, wins:0, owner: owners[b.owner_id]||{ display_name:'Unknown', team_name:'Unknown' } };
-    moneyMap[b.owner_id].total+=b.amount;
-    if(b.bonus_type==='HIGH_SCORE') moneyMap[b.owner_id].wins+=1;
+  const moneyMap = {};
+  Object.values(owners).forEach(o => {
+    moneyMap[o.owner_id] = { total:0, wins:0, owner: o };
   });
-  const leaderboard=Object.values(moneyMap).sort((a,b)=>b.total-a.total);
-  const tbody=document.querySelector('#money-leaderboard tbody'); tbody.innerHTML='';
+  bonuses.forEach(b=>{
+    if(moneyMap[b.owner_id]){
+      moneyMap[b.owner_id].total += b.amount;
+      if(b.bonus_type === 'HIGH_SCORE') moneyMap[b.owner_id].wins += 1;
+    }
+  });
+
+  const leaderboard = Object.values(moneyMap).sort((a,b)=>b.total-a.total || b.wins-a.wins);
+  const tbody = document.querySelector('#money-leaderboard tbody'); tbody.innerHTML='';
   
   leaderboard.forEach((l,i)=>{
+    const teamName = getTeamName(l.owner);
     const tr=document.createElement('tr');
     const rankClass = i < 3 ? `rank-${i+1}` : '';
     tr.innerHTML=`
       <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
       <td>
         <div class="team-cell">
-          ${createTeamLogo(l.owner.team_name)}
+          ${createTeamLogo(teamName)}
           <div class="team-info">
-            <span class="team-name">${l.owner.team_name}</span>
+            <span class="team-name">${teamName}</span>
             <span class="owner-name">${l.owner.display_name}</span>
           </div>
         </div>
       </td>
       <td>${l.wins}</td>
-      <td style="font-weight:700; font-size:1.1rem; color:#ffd89b;">$${l.total}</td>
+      <td style="font-weight:700; font-size:1.1rem;">$${l.total}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 function loadStandings(){
-  const data=Object.values(rosters).sort((a,b)=>b.wins-a.wins || b.points_for-a.points_for);
-  const tbody=document.querySelector('#standings-table tbody'); tbody.innerHTML='';
+  const data = Object.values(rosters).sort((a,b)=> (b.wins - a.wins) || (b.points_for - a.points_for));
+  const tbody = document.querySelector('#standings-table tbody'); tbody.innerHTML='';
   data.forEach((r,i)=>{
-    const o=owners[r.owner_id]||{ display_name:'Unknown', team_name:'Unknown' };
+    const o = owners[r.owner_id] || { display_name:'Unknown', team_name:'' };
+    const teamName = getTeamName(o);
     const tr=document.createElement('tr');
     const rankClass = i < 3 ? `rank-${i+1}` : '';
     tr.innerHTML=`
       <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
       <td>
         <div class="team-cell">
-          ${createTeamLogo(o.team_name)}
+          ${createTeamLogo(teamName)}
           <div class="team-info">
-            <span class="team-name">${o.team_name}</span>
+            <span class="team-name">${teamName}</span>
             <span class="owner-name">${o.display_name}</span>
           </div>
         </div>
       </td>
       <td style="font-weight:600;">${r.wins}-${r.losses}${r.ties > 0 ? '-' + r.ties : ''}</td>
-      <td style="font-weight:700; color:#ffd89b;">${r.points_for}</td>
+      <td style="font-weight:700;">${r.points_for.toFixed(2)}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-function loadMatchups(filterWeek='all'){
-  const tbody=document.querySelector('#matchups-table tbody'); tbody.innerHTML='';
+function loadMatchups(selectedWeek='all', selectedTeam='all'){
+  const tbody = document.querySelector('#matchups-table tbody'); tbody.innerHTML='';
   
   const matchupPairs = {};
   matchups.forEach(m=>{
@@ -703,38 +846,42 @@ function loadMatchups(filterWeek='all'){
   Object.values(matchupPairs).forEach(pair=>{
     if(pair.length !== 2) return;
     const week = pair[0].week;
-    if(filterWeek!=='all' && week!=filterWeek) return;
+    if(selectedWeek !== 'all' && week != Number(selectedWeek)) return;
     
-    const team1_roster_id = pair[0].roster_id;
-    const team2_roster_id = pair[1].roster_id;
-    const team1_owner_id = rosterToOwner[team1_roster_id];
-    const team2_owner_id = rosterToOwner[team2_roster_id];
+    const team1_owner_id = rosterToOwner[pair[0].roster_id];
+    const team2_owner_id = rosterToOwner[pair[1].roster_id];
     
-    const team1=owners[team1_owner_id]||{ team_name:'Unknown' };
-    const team2=owners[team2_owner_id]||{ team_name:'Unknown' };
-    const score1 = Number(pair[0].points);
-    const score2 = Number(pair[1].points);
-    const winner = score1 > score2 ? 0 : 1;
+    const team1 = owners[team1_owner_id] || { display_name:'Unknown', team_name:'' };
+    const team2 = owners[team2_owner_id] || { display_name:'Unknown', team_name:'' };
+    
+    const team1Name = getTeamName(team1);
+    const team2Name = getTeamName(team2);
+    
+    if(selectedTeam !== 'all' && team1Name !== selectedTeam && team2Name !== selectedTeam) return;
+    
+    const score1 = pair[0].points;
+    const score2 = pair[1].points;
+    const winner = score1 > score2 ? 0 : (score2 > score1 ? 1 : -1);
     
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td style="font-weight:700;">Week ${week}</td>
       <td>
         <div class="team-cell">
-          ${createTeamLogo(team1.team_name)}
-          <span class="team-name" style="opacity:${winner === 0 ? 1 : 0.6};">${team1.team_name}</span>
+          ${createTeamLogo(team1Name)}
+          <span class="team-name" style="opacity:${winner === 0 ? 1 : 0.6};">${team1Name}</span>
         </div>
       </td>
       <td>
         <div class="team-cell">
-          ${createTeamLogo(team2.team_name)}
-          <span class="team-name" style="opacity:${winner === 1 ? 1 : 0.6};">${team2.team_name}</span>
+          ${createTeamLogo(team2Name)}
+          <span class="team-name" style="opacity:${winner === 1 ? 1 : 0.6};">${team2Name}</span>
         </div>
       </td>
       <td>
-        <span class="score-display" style="color:${winner === 0 ? '#34d399' : 'rgba(255,255,255,0.6)'};">${score1.toFixed(2)}</span>
+        <span class="score-display" style="color:${winner === 0 ? '#00ffbb' : 'rgba(255,255,255,0.6)'};">${score1.toFixed(2)}</span>
         <span style="margin:0 0.5rem;">-</span>
-        <span class="score-display" style="color:${winner === 1 ? '#34d399' : 'rgba(255,255,255,0.6)'};">${score2.toFixed(2)}</span>
+        <span class="score-display" style="color:${winner === 1 ? '#00ffbb' : 'rgba(255,255,255,0.6)'};">${score2.toFixed(2)}</span>
       </td>
     `;
     tbody.appendChild(tr);
@@ -742,31 +889,56 @@ function loadMatchups(filterWeek='all'){
 }
 
 function loadTransactions(filterWeek='all'){
-  const tbody=document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
-  transactions.filter(t=>filterWeek==='all'||Number(t.week)==filterWeek).forEach(t=>{
-    const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0] : '';
-    const ownerId = rosterToOwner[rosterIds];
-    const owner=owners[ownerId]||{ team_name:'Unknown' };
-    const tr=document.createElement('tr');
-    const transType = t.type || 'N/A';
-    const badgeClass = `transaction-${transType.toLowerCase()}`;
-    const week=Number(t.week)||0;
-    tr.innerHTML=`
-      <td style="font-weight:700;">Week ${week}</td>
-      <td>
-        <div class="team-cell">
-          ${createTeamLogo(owner.team_name)}
-          <span class="team-name">${owner.team_name}</span>
-        </div>
-      </td>
-      <td><span class="transaction-badge ${badgeClass}">${transType}</span></td>
-    `;
-    tbody.appendChild(tr);
-  });
+  const tbody = document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
+  transactions
+    .filter(t => filterWeek==='all' || Number(t.week||0) == Number(filterWeek))
+    .sort((a,b) => b.week - a.week || b.timestamp - a.timestamp)
+    .forEach(t=>{
+      const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0].trim() : '';
+      const ownerId = rosterToOwner[rosterIds] || '';
+      const owner = owners[ownerId] || { display_name:'Unknown', team_name:'' };
+      const teamName = getTeamName(owner);
+      
+      let details = '';
+      const type = (t.type || '').toLowerCase();
+      const badgeClass = `transaction-${type}` || 'transaction-add';
+      
+      if(t.adds && Object.keys(t.adds).length > 0){
+        const playerId = Object.keys(t.adds)[0];
+        details = `Added ${getPlayerName(playerId)}`;
+      } else if(t.drops && Object.keys(t.drops).length > 0){
+        const playerId = Object.keys(t.drops)[0];
+        details = `Dropped ${getPlayerName(playerId)}`;
+      } else if(t.traded && type === 'trade'){
+        details = 'Trade';
+      } else {
+        details = t.type || 'Unknown';
+      }
+      
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td style="font-weight:700;">Week ${t.week||'?'}</td>
+        <td>
+          <div class="team-cell">
+            ${createTeamLogo(teamName)}
+            <span class="team-name">${teamName}</span>
+          </div>
+        </td>
+        <td><span class="transaction-badge ${badgeClass}">${(t.type||'ADD').toUpperCase()}</span></td>
+        <td>${details}</td>
+      `;
+      tbody.appendChild(tr);
+    });
 }
 
-function filterMatchups(){ loadMatchups(document.getElementById('matchup-week').value); }
-function filterTransactions(){ loadTransactions(document.getElementById('trans-week').value); }
+function filterMatchups(){
+  const week = document.getElementById('matchup-week').value;
+  const team = document.getElementById('matchup-team').value;
+  loadMatchups(week, team);
+}
+function filterTransactions(){
+  loadTransactions(document.getElementById('trans-week').value);
+}
 
 function showPage(page){
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
@@ -776,16 +948,34 @@ function showPage(page){
 }
 
 function sortTable(tableId, col){
-  const table=document.getElementById(tableId); let switching=true, dir='asc';
+  const table = document.getElementById(tableId);
+  let switching = true;
+  let dir = 'asc';
   while(switching){
-    switching=false; const rows=table.rows; for(let i=1;i<rows.length-1;i++){
-      let shouldSwitch=false, x=rows[i].getElementsByTagName('TD')[col], y=rows[i+1].getElementsByTagName('TD')[col];
-      let xContent=x.textContent||x.innerText, yContent=y.textContent||y.innerText;
-      if(!isNaN(xContent) && !isNaN(yContent)){ xContent=Number(xContent); yContent=Number(yContent); }
-      if((dir=='asc' && xContent>yContent) || (dir=='desc' && xContent<yContent)){ shouldSwitch=true; break; }
+    switching = false;
+    const rows = table.rows;
+    for(let i=1; i<rows.length-1; i++){
+      let shouldSwitch = false;
+      let x = rows[i].cells[col];
+      let y = rows[i+1].cells[col];
+      let xVal = x.textContent.trim();
+      let yVal = y.textContent.trim();
+      if(!isNaN(xVal) && !isNaN(yVal)){
+        xVal = Number(xVal);
+        yVal = Number(yVal);
+      }
+      if((dir==='asc' && xVal > yVal) || (dir==='desc' && xVal < yVal)){
+        shouldSwitch = true;
+        break;
+      }
     }
-    if(shouldSwitch){ rows[i].parentNode.insertBefore(rows[i+1],rows[i]); switching=true; }
-    else if(dir=='asc'){ dir='desc'; switching=true; }
+    if(shouldSwitch){
+      rows[i].parentNode.insertBefore(rows[i+1], rows[i]);
+      switching = true;
+    } else if(dir==='asc'){
+      dir='desc';
+      switching=true;
+    }
   }
 }
 
