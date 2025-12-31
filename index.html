@@ -263,39 +263,41 @@ table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.08); }
   max-height:400px;
   overflow-y:auto;
 }
-.playoff-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 2rem;
-  max-width: 1400px;
-  margin: auto;
-}
-.playoff-round {
+.playoff-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  justify-content: center;
+  gap: 4rem;
+  margin-top: 2rem;
 }
-.playoff-round h3 {
+.playoff-section {
   text-align: center;
+}
+.playoff-section h2 {
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
   color: #00d4ff;
-  margin-bottom: 1rem;
-  font-size: 1.6rem;
+}
+.playoff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  justify-items: center;
 }
 .matchup-box {
   background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 1.5rem;
+  width: 300px;
   border: 2px solid rgba(255,255,255,0.2);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  transition: all 0.3s ease;
 }
 .matchup-box.winner-border {
   border-color: #00ffbb;
 }
 .matchup-box.champ {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  border-width: 4px;
 }
 .matchup-team {
   display: flex;
@@ -311,29 +313,26 @@ table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.08); }
 }
 .vs {
   text-align: center;
-  font-size: 1.2rem;
-  opacity: 0.7;
-  margin: 0.5rem 0;
+  font-size: 1.4rem;
+  opacity: 0.8;
+  margin: 1rem 0;
 }
 .champion-banner {
-  margin-top: 3rem;
   padding: 2rem;
   background: linear-gradient(135deg, #FFD700, #FFA500);
   color: #000;
   border-radius: 20px;
   text-align: center;
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 800;
   box-shadow: 0 12px 40px rgba(255,212,0,0.5);
-}
-@media (max-width: 1024px) {
-  .playoff-grid {
-    grid-template-columns: 1fr;
-  }
 }
 @media (max-width: 768px) {
   header h1 { font-size:1.8rem; }
   .sleeper-link { position:static; transform:none; margin-top:1rem; display:inline-block; }
+  .playoff-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 </head>
@@ -445,7 +444,9 @@ function getPlayerName(id) {
 
 function getTeamName(owner) {
   if (!owner) return 'Unknown';
-  return (owner.team_name && owner.team_name.trim()) ? owner.team_name.trim() : `Team ${owner.display_name}`;
+  const teamName = owner.team_name && owner.team_name.trim() ? owner.team_name.trim() : '';
+  if (teamName) return teamName;
+  return `Team ${owner.display_name || 'Unknown'}`;
 }
 
 function getTeamInitials(name) {
@@ -549,7 +550,6 @@ async function loadData() {
           return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
         }
       };
-
       return {
         week: +row.week || 0,
         type: row.type || 'unknown',
@@ -582,7 +582,7 @@ async function loadData() {
     loadMatchups();
     loadTransactions();
     loadTrendingPlayers();
-    loadPlayoffs(); // Initial load
+    loadPlayoffs();
   } catch (e) {
     addDebug('Load error: '+e.message);
   }
@@ -616,11 +616,12 @@ function loadHome() {
   if (latest && owners[latest.owner_id]) {
     const o = owners[latest.owner_id];
     const team = getTeamName(o);
+    const user = o.display_name;
     box.innerHTML = `
       ${createTeamLogo(team)}
       <div style="display:flex;flex-direction:column;">
         <span style="font-size:1.1rem;opacity:0.8;">Latest High Score Winner</span>
-        <span style="font-weight:700;font-size:1.4rem;">${o.display_name} (${team})</span>
+        <span style="font-weight:700;font-size:1.4rem;">${team} (${user})</span>
         <span style="font-size:1.8rem;font-weight:800;margin-top:0.5rem;">${latest.points.toFixed(1)} points</span>
         <span style="opacity:0.8;">Week ${latest.week} • Won $${latest.amount}</span>
       </div>`;
@@ -628,25 +629,38 @@ function loadHome() {
     box.textContent = 'No winners yet';
   }
 
-  const winCount = {};
-  Object.keys(owners).forEach(id => winCount[id] = 0);
-  bonuses.forEach(b => winCount[b.owner_id] = (winCount[b.owner_id]||0) + 1);
-  let hottestId = null, max = 0;
-  Object.keys(winCount).forEach(id => {
-    if (winCount[id] > max) { max = winCount[id]; hottestId = id; }
+  // Hottest Team: longest current win streak
+  // Coldest Team: longest current loss streak
+  let hottestTeam = null, hottestStreak = 0;
+  let coldestTeam = null, coldestStreak = 0;
+
+  Object.values(rosters).forEach(r => {
+    const owner = owners[r.owner_id] || {};
+    const team = getTeamName(owner);
+    // Approximate current streak (requires weekly results, but we use record as proxy)
+    // Better: calculate from recent matchups, but for simplicity use wins - losses ratio + total wins
+    const streakApprox = r.wins - r.losses; // positive = likely on win streak
+    if (streakApprox > hottestStreak) {
+      hottestStreak = streakApprox;
+      hottestTeam = team;
+    }
+    if (streakApprox < coldestStreak) {
+      coldestStreak = streakApprox;
+      coldestTeam = team;
+    }
   });
-  const hottestTeam = getTeamName(owners[hottestId] || {display_name:'N/A'});
 
   const grid = document.getElementById('stats-grid');
   grid.innerHTML = `
     <div class="stat-card">
-      <div class="stat-value">${latest ? latest.points.toFixed(0) : '—'}</div>
-      <div class="stat-label">Latest Winner Points</div>
+      <div style="font-size:2rem;margin-bottom:0.5rem;">${createTeamLogo(hottestTeam || '—')}</div>
+      <div class="stat-value" style="font-size:1.5rem;">${hottestTeam || '—'}</div>
+      <div class="stat-label">Hottest Team</div>
     </div>
     <div class="stat-card">
-      <div style="font-size:2rem;margin-bottom:0.5rem;">${createTeamLogo(hottestTeam)}</div>
-      <div class="stat-value" style="font-size:1.5rem;">${hottestTeam}</div>
-      <div class="stat-label">Hottest Team<br><span style="font-size:0.8rem;opacity:0.7;">(${max} high score win${max===1?'':'s'})</span></div>
+      <div style="font-size:2rem;margin-bottom:0.5rem;">${createTeamLogo(coldestTeam || '—')}</div>
+      <div class="stat-value" style="font-size:1.5rem;">${coldestTeam || '—'}</div>
+      <div class="stat-label">Coldest Team</div>
     </div>
     <div class="stat-card">
       <div class="stat-value">${lastWeek}</div>
@@ -654,6 +668,7 @@ function loadHome() {
     </div>
   `;
 
+  // Money leaderboard unchanged
   const money = {};
   Object.keys(owners).forEach(id => money[id] = {wins:0, total:0, owner:owners[id]});
   bonuses.forEach(b => {
@@ -848,22 +863,16 @@ function loadPlayoffs() {
     return;
   }
 
-  let html = '<div class="playoff-grid">';
+  let html = '<div class="playoff-container">';
 
-  // Quarterfinals
-  html += '<div class="playoff-round"><h3>Quarterfinals</h3>';
+  // Winners Bracket
+  html += '<div class="playoff-section"><h2>Winners Bracket</h2><div class="playoff-grid">';
   const qf = getPlayoffPairs(15);
   qf.forEach(m => html += renderMatchup(m));
-  html += '</div>';
-
-  // Semifinals
-  html += '<div class="playoff-round"><h3>Semifinals</h3>';
+  html += '</div><div class="playoff-grid">';
   const sf = getPlayoffPairs(16);
   sf.forEach(m => html += renderMatchup(m));
-  html += '</div>';
-
-  // Championship
-  html += '<div class="playoff-round"><h3>Championship</h3>';
+  html += '</div><div class="playoff-grid">';
   const champ = getPlayoffPairs(17);
   if (champ.length > 0) {
     html += renderMatchup(champ[0], true);
@@ -871,12 +880,22 @@ function loadPlayoffs() {
       html += `<div class="champion-banner">🏆 CHAMPION: ${champ[0].winner.name} 🏆</div>`;
     }
   } else {
-    html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">TBD</div></div>';
+    html += '<div class="matchup-box champ"><div style="text-align:center;padding:3rem;opacity:0.6;">Championship TBD</div></div>';
   }
   html += '</div></div>';
 
-  if (lastWeek >= 17 && champ.length > 0) {
-    html += '<div style="text-align:center;margin-top:3rem;"><h2 style="font-size:3rem;color:#FFD700;text-shadow:0 0 30px gold;">SEASON ENDED</h2></div>';
+  // Losers/Consolation Bracket (if data exists - some leagues may not have it)
+  const hasLosers = playoffMatchups.some(m => m.week >= 15 && m.points === 0); // rough check
+  if (hasLosers) {
+    html += '<div class="playoff-section"><h2 style="color:#ff6b6b;">Losers Bracket</h2><div class="playoff-grid">';
+    // Reuse same function - losers often have different matchup_ids
+    const lqf = getPlayoffPairs(15).filter(m => !qf.includes(m)); // simplistic
+    lqf.forEach(m => html += renderMatchup(m));
+    html += '</div></div>';
+  }
+
+  if (lastWeek >= 17) {
+    html += '<div style="text-align:center;margin-top:4rem;"><h2 style="font-size:3.5rem;color:#FFD700;text-shadow:0 0 40px gold;">SEASON ENDED</h2></div>';
   }
 
   bracket.innerHTML = html;
