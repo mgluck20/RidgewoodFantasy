@@ -1,3 +1,79 @@
+Project Summary – Ridgewood Fantasy Dashboard 2026
+Goal
+
+You wanted to build a fully functional, web-based fantasy football dashboard for Ridgewood Fantasy 2026 with dynamic data pulled from Google Sheets CSVs. The main features you wanted were:
+
+Four pages:
+
+Home – Latest winner & money leaderboard
+
+Standings – Team standings (sortable)
+
+Matchups – Weekly games
+
+Transactions – Trades, adds, drops
+
+Dynamic updates using CSVs published from Google Sheets:
+
+Owners
+
+Rosters
+
+Weekly matchups
+
+Weekly bonuses
+
+Transactions
+
+Configuration (for last processed week)
+
+Enhanced visuals:
+
+Color-coded rows (top 3 winners highlighted)
+
+Hover effects
+
+Responsive layout
+
+Filters for matchups and transactions by week
+
+Functional requirements:
+
+Show latest winner with amount and week
+
+Money leaderboard with total bonuses & wins
+
+Standings sortable by columns
+
+Transactions load dynamically
+
+Weeks processed display
+
+Issues Faced
+
+Initial versions had transactions not loading correctly.
+
+Some earlier versions were slow or unresponsive.
+
+Needed a mix of styling and functional improvements with filters, sorting, and interactive elements.
+
+Enhancements Made
+
+Rewrote full HTML, CSS, and JS (~400 lines)
+
+Added week filters for Matchups and Transactions
+
+Added sortable columns for Standings
+
+Highlighted top 3 in money leaderboard
+
+Added total bonuses summary
+
+Improved styling for winner box, tables, hover effects, alternating rows, and responsive nav
+
+Error-proofed owner references to handle missing or malformed CSV data
+
+Current Code
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -184,7 +260,7 @@ function loadHome(){
     totalPaid+=l.total;
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${i+1}</td><td>${l.owner.display_name}</td><td>${l.owner.team_name}</td><td>${l.wins}</td><td>$${l.total}</td>`;
-    if(i<3) tr.style.background='#fde68a'; // highlight top 3
+    if(i<3) tr.style.background='#fde68a';
     tbody.appendChild(tr);
   });
   document.getElementById('total-bonuses').textContent=`Total Bonuses Paid: $${totalPaid}`;
