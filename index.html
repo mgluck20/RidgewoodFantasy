@@ -35,7 +35,7 @@ header h1 {
   right:2rem;
   top:50%;
   transform:translateY(-50%);
-  background: linear_gradient(135deg, #00d4ff 0%, #00ffbb 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   color:#0f2027;
   padding:0.75rem 1.5rem;
   border-radius:12px;
@@ -192,13 +192,13 @@ table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.08); }
   color:#0f2027;
 }
 .rank-1 { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color:#000; }
-.rank-2 { background: linear_gradient(135deg, #C0C0C0 0%, #808080 100%); color:#000; }
-.rank-3 { background: linear_gradient(135deg, #CD7F32 0%, #8B4513 100%); }
+.rank-2 { background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%); color:#000; }
+.rank-3 { background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%); }
 .team-logo {
   width:40px;
   height:40px;
   border-radius:50%;
-  background: linear_gradient(135deg, #00d4ff 0%, #00ffbb 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -301,22 +301,14 @@ table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.08); }
 }
 .matchup-team {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
   font-size: 1.2rem;
   margin-bottom: .5rem;
 }
-.matchup-team .team-name {
-  font-weight: 600;
-}
-.matchup-team .score {
-  font-size: 1.6rem;
-  font-weight: 800;
+.matchup-team.win {
   color: #00ffbb;
-}
-.matchup-team.win .team-name {
   font-weight: 800;
-  color: #00ffbb;
 }
 .vs {
   text-align: center;
@@ -471,16 +463,15 @@ function createTeamLogo(name) {
 }
 
 function csvToArray(csv) {
-  if (!csv.trim()) return [];
   const lines = csv.trim().split('\n');
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  if (lines.length < 1) return [];
+  const headers = lines[0].split(',').map(h => h.trim());
   return lines.slice(1).map(line => {
-    const values = line.match(/(".*?"|[^",]+)(?=,|$)/g) || [];
     const obj = {};
-    headers.forEach((h, i) => {
+    const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+    headers.forEach((h,i) => {
       let val = values[i] || '';
-      obj[h] = val.replace(/^"|"$/g, '').trim();
+      obj[h] = val.replace(/^"|"$/g,'').trim();
     });
     return obj;
   });
@@ -491,8 +482,9 @@ async function loadSleeperPlayers() {
     const res = await fetch(SLEEPER_PLAYERS_URL);
     if (res.ok) {
       sleeperPlayers = await res.json();
+      addDebug(`Loaded ${Object.keys(sleeperPlayers).length} players`);
     }
-  } catch (e) {}
+  } catch (e) { addDebug('Player load error: '+e.message); }
 }
 
 async function loadTrendingPlayers() {
@@ -540,16 +532,16 @@ async function loadData() {
     transactions = csvToArray(t).map(row => {
       const safeParse = (field) => {
         let str = row[field] || '';
-        if (typeof str !== 'string' || !str.trim() || str === 'null' || str.trim() === '' || str.trim() === '{}') {
-          return [];
+        if (!str || str === 'null' || str.trim() === '' || str === '{}') {
+          return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
         }
-        str = str.replace(/'/g, '"').replace(/""/g, '"');
+        str = str.replace(/'/g, '"');
+        str = str.replace(/""/g, '"');
         try {
-          const parsed = JSON.parse(str);
-          return Array.isArray(parsed) ? parsed : (typeof parsed === 'object' ? Object.keys(parsed).map(k => ({[k]: parsed[k]})) : []);
+          return JSON.parse(str);
         } catch (e) {
-          addDebug(`JSON parse error in ${field}: ${str.substring(0,100)}`);
-          return [];
+          addDebug(`JSON parse error in ${field} (week ${row.week || '?'}): ${str.substring(0,100)}...`);
+          return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
         }
       };
       return {
@@ -583,7 +575,266 @@ async function loadData() {
   }
 }
 
-/* PLAYOFF BRACKET INTEGRATION */
+function populateWeekFilters() {
+  const weeks = [...new Set([...matchups.map(m=>m.week), ...transactions.map(t=>t.week)])].sort((a,b)=>a-b);
+  ['matchup-week','trans-week'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="all">All Weeks</option>';
+    weeks.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w; opt.text = `Week ${w}`;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function populateTeamFilter() {
+  const sel = document.getElementById('matchup-team');
+  sel.innerHTML = '<option value="all">All Teams</option>';
+  Object.values(owners).sort((a,b)=>getTeamName(a).localeCompare(getTeamName(b))).forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = getTeamName(o);
+    opt.text = getTeamName(o);
+    sel.appendChild(opt);
+  });
+}
+
+function loadHome() {
+  const latest = bonuses.sort((a,b)=>b.week-a.week)[0];
+  const box = document.getElementById('winner-box');
+  if (latest && owners[latest.owner_id]) {
+    const o = owners[latest.owner_id];
+    const team = getTeamName(o);
+    box.innerHTML = `
+      ${createTeamLogo(team)}
+      <div style="display:flex;flex-direction:column;">
+        <span style="font-size:1.1rem;opacity:0.8;">Latest High Score Winner</span>
+        <span style="font-weight:700;font-size:1.6rem;">${team} (${o.display_name})</span>
+        <span style="font-size:1.8rem;font-weight:800;margin-top:0.5rem;">${latest.points.toFixed(1)} points</span>
+        <span style="opacity:0.8;">Week ${latest.week} • Won $${latest.amount}</span>
+      </div>`;
+  } else {
+    box.textContent = 'No winners yet';
+  }
+
+  let hottest = null, hottestDiff = -Infinity;
+  let coldest = null, coldestDiff = Infinity;
+
+  Object.values(rosters).forEach(r => {
+    const diff = r.wins - r.losses;
+    const o = owners[r.owner_id] || {};
+    const team = getTeamName(o);
+    if (diff > hottestDiff) {
+      hottestDiff = diff;
+      hottest = team;
+    }
+    if (diff < coldestDiff) {
+      coldestDiff = diff;
+      coldest = team;
+    }
+  });
+
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = `
+    <div class="stat-card">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">${createTeamLogo(hottest || '—')}</div>
+      <div class="stat-value" style="font-size:1.5rem;">${hottest || '—'}</div>
+      <div class="stat-label">Hottest Team</div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">${createTeamLogo(coldest || '—')}</div>
+      <div class="stat-value" style="font-size:1.5rem;">${coldest || '—'}</div>
+      <div class="stat-label">Coldest Team</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${lastWeek}</div>
+      <div class="stat-label">Weeks Played</div>
+    </div>
+  `;
+
+  const money = {};
+  Object.keys(owners).forEach(id => money[id] = {wins:0, total:0, owner:owners[id]});
+  bonuses.forEach(b => {
+    if (money[b.owner_id]) {
+      money[b.owner_id].total += b.amount;
+      money[b.owner_id].wins += 1;
+    }
+  });
+  const lb = Object.values(money).sort((a,b)=>b.wins-a.wins || b.total-a.total);
+  const tbody = document.querySelector('#money-leaderboard tbody');
+  tbody.innerHTML = '';
+  lb.forEach((e,i) => {
+    const team = getTeamName(e.owner);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rank-badge ${i<3?'rank-'+(i+1):''}">${i+1}</span></td>
+      <td><div class="team-cell">${createTeamLogo(team)}<div class="team-info"><span class="team-name">${team}</span><span class="owner-name">${e.owner.display_name}</span></div></div></td>
+      <td>${e.wins}</td>
+      <td style="font-weight:700;font-size:1.1rem;">$${e.total}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function loadStandings() {
+  const data = Object.values(rosters).sort((a,b)=>(b.wins-a.wins)||(b.points_for-a.points_for));
+  const tbody = document.querySelector('#standings-table tbody');
+  tbody.innerHTML = '';
+  data.forEach((r,i) => {
+    const o = owners[r.owner_id] || {};
+    const team = getTeamName(o);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rank-badge ${i<3?'rank-'+(i+1):''}">${i+1}</span></td>
+      <td><div class="team-cell">${createTeamLogo(team)}<div class="team-info"><span class="team-name">${team}</span><span class="owner-name">${o.display_name}</span></div></div></td>
+      <td style="font-weight:600;">${r.wins}-${r.losses}${r.ties>0?'-'+r.ties:''}</td>
+      <td style="font-weight:700;">${(+r.points_for).toFixed(2)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function loadMatchups(w='all', team='all') {
+  const tbody = document.querySelector('#matchups-table tbody');
+  tbody.innerHTML = '';
+  const pairs = {};
+  matchups.forEach(m => {
+    const key = `${m.week}-${m.matchup_id}`;
+    pairs[key] = pairs[key] || [];
+    pairs[key].push(m);
+  });
+  Object.values(pairs).forEach(pair => {
+    if (pair.length !== 2) return;
+    const week = pair[0].week;
+    if (w !== 'all' && week != +w) return;
+    const t1 = owners[rosterToOwner[pair[0].roster_id]] || {};
+    const t2 = owners[rosterToOwner[pair[1].roster_id]] || {};
+    const n1 = getTeamName(t1), n2 = getTeamName(t2);
+    if (team !== 'all' && n1 !== team && n2 !== team) return;
+    const s1 = pair[0].points, s2 = pair[1].points;
+    const win = s1 > s2 ? 0 : s2 > s1 ? 1 : -1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:700;">Week ${week}</td>
+      <td><div class="team-cell">${createTeamLogo(n1)}<span class="team-name" style="opacity:${win===0?1:0.6}">${n1}</span></div></td>
+      <td><div class="team-cell">${createTeamLogo(n2)}<span class="team-name" style="opacity:${win===1?1:0.6}">${n2}</span></div></td>
+      <td>
+        <span style="color:${win===0?'#00ffbb':'rgba(255,255,255,0.6)'}">${s1.toFixed(2)}</span> -
+        <span style="color:${win===1?'#00ffbb':'rgba(255,255,255,0.6)'}">${s2.toFixed(2)}</span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function loadTransactions(filter='all') {
+  const container = document.getElementById('transactions-list');
+  container.innerHTML = '<p style="text-align:center;opacity:0.7;">Loading...</p>';
+  const filtered = transactions
+    .filter(t => filter === 'all' || t.week == +filter)
+    .sort((a,b) => b.created - a.created || b.week - a.week);
+  if (!filtered.length) {
+    container.innerHTML = '<p style="text-align:center;opacity:0.7;padding:2rem;">No transactions found</p>';
+    return;
+  }
+  container.innerHTML = '';
+  let currentWeek = null, weekDiv = null;
+  filtered.forEach(t => {
+    const type = t.type.toLowerCase();
+    const badgeClass = type === 'trade' ? 'transaction-trade' : 'transaction-free_agent';
+    const typeText = type === 'free_agent' ? 'FREE AGENT' : type === 'waiver' ? 'WAIVER' : type.toUpperCase();
+    const date = t.created ? new Date(t.created) : null;
+    const dateStr = date ? `<div style="font-size:0.85rem;opacity:0.7;margin-top:0.5rem;">${date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>` : '';
+    const teamsHtml = t.roster_ids.map(rid => {
+      const oid = rosterToOwner[rid] || '';
+      const o = owners[oid] || {display_name:'Unknown'};
+      const name = getTeamName(o);
+      return `<div class="team-cell" style="display:inline-flex;gap:0.75rem;align-items:center;">${createTeamLogo(name)}<span class="team-name">${name}</span></div>`;
+    }).join(type==='trade' ? '<span style="font-size:1.8rem;opacity:0.6;margin:0 1rem;">↔</span>' : '<span style="margin:0 0.5rem;">•</span>');
+    let details = [];
+    Object.keys(t.adds).forEach(pid => details.push(`<span style="color:#00ffbb;font-weight:700;">+ ${getPlayerName(pid)}</span>`));
+    Object.keys(t.drops).forEach(pid => details.push(`<span style="color:#ff6b6b;font-weight:700;">– ${getPlayerName(pid)}</span>`));
+    t.draft_picks.forEach(p => {
+      const from = getTeamName(owners[rosterToOwner[p.previous_owner_id || p.roster_id] || {}]);
+      const to = getTeamName(owners[rosterToOwner[p.owner_id] || {}]);
+      details.push(`<strong>${from} → ${to}</strong>: ${p.season} Round ${p.round}`);
+    });
+    t.waiver_budget.forEach(b => {
+      const sender = getTeamName(owners[rosterToOwner[b.sender] || {}]);
+      const receiver = getTeamName(owners[rosterToOwner[b.receiver] || {}]);
+      details.push(`<strong>${sender}</strong> sends $${b.amount} FAAB → <strong>${receiver}</strong>`);
+    });
+    if (!details.length) details = ['<span style="opacity:0.6;">No movement recorded</span>'];
+    if (t.week !== currentWeek) {
+      currentWeek = t.week;
+      weekDiv = document.createElement('div');
+      weekDiv.innerHTML = `<h3 style="font-size:1.5rem;margin:2rem 0 1rem;color:#00d4ff;border-bottom:2px solid #00d4ff;padding-bottom:0.5rem;">Week ${currentWeek}</h3>`;
+      container.appendChild(weekDiv);
+    }
+    const card = document.createElement('div');
+    card.style = 'background:rgba(255,255,255,0.08);backdrop-filter:blur(20px);border-radius:16px;padding:1.5rem;margin-bottom:1rem;border:1px solid rgba(255,255,255,0.15);';
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:1rem;">${teamsHtml}</div>
+        <div style="text-align:right;">
+          <span class="transaction-badge ${badgeClass}">${typeText}</span>
+          ${dateStr}
+        </div>
+      </div>
+      <div style="margin-top:1.2rem;line-height:1.8;font-size:1.05rem;">${details.join('<br>')}</div>
+    `;
+    weekDiv.appendChild(card);
+  });
+}
+
+/* =========================
+   PLAYOFF BRACKET - NEW INTEGRATION
+========================= */
+function csvToArray(csv){
+  const lines=csv.trim().split('\n');
+  if(lines.length<2) return [];
+  const headers=lines[0].split(',').map(h=>h.trim());
+  return lines.slice(1).map(line=>{
+    const obj={},vals=line.split(',');
+    headers.forEach((h,i)=>obj[h]=vals[i]?.trim()||'');
+    return obj;
+  });
+}
+function groupByRound(data){
+  const rounds={};
+  data.forEach(m=>{
+    rounds[m.round]=rounds[m.round]||[];
+    rounds[m.round].push(m);
+  });
+  return rounds;
+}
+function renderMatch(m){
+  const p1=m.p1_score||'';
+  const p2=m.p2_score||'';
+  const t1Name = getTeamName(owners[rosterToOwner[m.t1]] || {});
+  const t2Name = getTeamName(owners[rosterToOwner[m.t2]] || {});
+  return `
+    <div class="matchup-box">
+      <div class="matchup-team ${m.w===m.t1?'win':''}">
+        <span>${t1Name||'TBD'}</span><span>${p1}</span>
+      </div>
+      <div class="vs">VS</div>
+      <div class="matchup-team ${m.w===m.t2?'win':''}">
+        <span>${t2Name||'TBD'}</span><span>${p2}</span>
+      </div>
+    </div>`;
+}
+function renderBracket(title,data){
+  if(data.length===0) return '';
+  const rounds=groupByRound(data);
+  let html=`<div class="playoff-section"><h2>${title}</h2>`;
+  Object.keys(rounds).sort((a,b)=>a-b).forEach(r=>{
+    html+=`<div class="playoff-round"><h3>Round ${r}</h3><div class="playoff-grid">`;
+    rounds[r].forEach(m=>html+=renderMatch(m));
+    html+='</div></div>';
+  });
+  return html+'</div>';
+}
 async function loadPlayoffs(){
   const bracket=document.getElementById('playoff-bracket');
   try{
@@ -602,87 +853,22 @@ async function loadPlayoffs(){
         </div>`;
       return;
     }
-
-    let html = '<div class="playoff-container">';
-
-    // Winners Bracket
-    if(winners.length > 0){
-      html += '<div class="playoff-section"><h2>Winners Bracket</h2>';
-      const rounds = {};
-      winners.forEach(m => {
-        rounds[m.round] = rounds[m.round] || [];
-        rounds[m.round].push(m);
-      });
-      Object.keys(rounds).sort((a,b)=>a-b).forEach(r => {
-        html += `<div class="playoff-round"><h3>Round ${r}</h3><div class="playoff-grid">`;
-        rounds[r].forEach(m => {
-          const t1 = typeof m.t1 === 'number' ? m.t1 : null;
-          const t2 = typeof m.t2 === 'number' ? m.t2 : null;
-          const name1 = t1 ? getTeamName(owners[rosterToOwner[t1]] || {}) : 'TBD';
-          const name2 = t2 ? getTeamName(owners[rosterToOwner[t2]] || {}) : 'TBD';
-          const score1 = m.p1_score || '';
-          const score2 = m.p2_score || '';
-          const win1 = m.w == t1;
-          const win2 = m.w == t2;
-          html += `
-            <div class="matchup-box">
-              <div class="matchup-team ${win1 ? 'win' : ''}">
-                <div class="team-name">${name1}</div>
-                <div class="score">${score1}</div>
-              </div>
-              <div class="vs">VS</div>
-              <div class="matchup-team ${win2 ? 'win' : ''}">
-                <div class="team-name">${name2}</div>
-                <div class="score">${score2}</div>
-              </div>
-            </div>`;
-        });
-        html += '</div></div>';
-      });
-      html += '</div>';
-    }
-
-    // Losers Bracket
-    if(losers.length > 0){
-      html += '<div class="playoff-section"><h2>Losers Bracket</h2>';
-      const rounds = {};
-      losers.forEach(m => {
-        rounds[m.round] = rounds[m.round] || [];
-        rounds[m.round].push(m);
-      });
-      Object.keys(rounds).sort((a,b)=>a-b).forEach(r => {
-        html += `<div class="playoff-round"><h3>Round ${r}</h3><div class="playoff-grid">`;
-        rounds[r].forEach(m => {
-          const t1 = typeof m.t1 === 'number' ? m.t1 : null;
-          const t2 = typeof m.t2 === 'number' ? m.t2 : null;
-          const name1 = t1 ? getTeamName(owners[rosterToOwner[t1]] || {}) : 'TBD';
-          const name2 = t2 ? getTeamName(owners[rosterToOwner[t2]] || {}) : 'TBD';
-          const score1 = m.p1_score || '';
-          const score2 = m.p2_score || '';
-          const win1 = m.w == t1;
-          const win2 = m.w == t2;
-          html += `
-            <div class="matchup-box">
-              <div class="matchup-team ${win1 ? 'win' : ''}">
-                <div class="team-name">${name1}</div>
-                <div class="score">${score1}</div>
-              </div>
-              <div class="vs">VS</div>
-              <div class="matchup-team ${win2 ? 'win' : ''}">
-                <div class="team-name">${name2}</div>
-                <div class="score">${score2}</div>
-              </div>
-            </div>`;
-        });
-        html += '</div></div>';
-      });
-      html += '</div>';
-    }
-
-    bracket.innerHTML = html + '</div>';
+    bracket.innerHTML=`
+      <div class="playoff-container">
+        ${renderBracket('Winners Bracket',winners)}
+        ${renderBracket('Losers Bracket',losers)}
+      </div>`;
   }catch(e){
-    bracket.innerHTML = '<div class="playoff-message">Error loading bracket</div>';
+    bracket.innerHTML='<div class="playoff-message">Error loading bracket data</div>';
   }
+}
+
+function filterMatchups() {
+  loadMatchups(document.getElementById('matchup-week').value, document.getElementById('matchup-team').value);
+}
+
+function filterTransactions() {
+  loadTransactions(document.getElementById('trans-week').value);
 }
 
 function showPage(id) {
