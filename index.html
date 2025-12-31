@@ -1,286 +1,260 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ridgewood Fantasy League</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-      body { padding-top: 70px; background-color: #f8f9fa; }
-      .navbar-brand { font-weight: bold; }
-      .card { margin-bottom: 30px; }
-      .loading { text-align: center; padding: 40px; color: #666; }
-      .table th { background-color: #f1f1f1; }
-      footer { text-align: center; padding: 20px; color: #666; font-size: 0.9em; margin-top: 50px; }
-    </style>
-  </head>
-  <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-      <div class="container">
-        <a class="navbar-brand" href="javascript:showPage('home')">Ridgewood Fantasy League</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="javascript:showPage('home')">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="javascript:showPage('standings')">Standings</a></li>
-            <li class="nav-item"><a class="nav-link" href="javascript:showPage('transactions')">Transactions</a></li>
-            <li class="nav-item"><a class="nav-link" href="javascript:showPage('history')">Weekly History</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ridgewood Fantasy 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+      color: #333;
+    }
+    header {
+      background: #1e3a8a;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      background: #3b82f6;
+      padding: 0.5rem 0;
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    nav button.active {
+      border-bottom: 2px solid white;
+    }
+    main {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    table th, table td {
+      padding: 0.5rem;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+    table th {
+      background: #1e40af;
+      color: white;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #1e3a8a;
+    }
+    #last-updated {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #555;
+    }
+    .winner-box {
+      background: #facc15;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
 
-    <div class="container">
-      <!-- Home Page -->
-      <div id="home" class="page-content">
-        <h2 class="mt-4">Latest Weekly High Scorer</h2>
-        <div id="latest-winner" class="card">
-          <div class="card-body loading">Loading latest winner...</div>
-        </div>
+<header>
+  <h1>Ridgewood Fantasy 2026</h1>
+</header>
 
-        <h2>Money Leaderboard</h2>
-        <div id="money-leaderboard" class="card">
-          <div class="card-body">
-            <div class="loading">Loading leaderboard...</div>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr><th>Rank</th><th>Owner</th><th>Total Winnings</th><th>Weekly Wins</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+<nav>
+  <button onclick="showPage('home')" class="active">Home</button>
+  <button onclick="showPage('standings')">Standings</button>
+  <button onclick="showPage('matchups')">Matchups</button>
+  <button onclick="showPage('transactions')">Transactions</button>
+</nav>
 
-      <!-- Standings Page -->
-      <div id="standings" class="page-content" style="display:none;">
-        <h2 class="mt-4">Current League Standings</h2>
-        <div id="standings-table" class="card">
-          <div class="card-body">
-            <div class="loading">Loading standings...</div>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr><th>Rank</th><th>Owner</th><th>Record</th><th>Points For</th><th>Points Against</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+<main>
+  <div id="home" class="page">
+    <div class="section-title">Latest Winner</div>
+    <div id="latest-winner" class="winner-box">Loading...</div>
 
-      <!-- Transactions Page -->
-      <div id="transactions" class="page-content" style="display:none;">
-        <h2 class="mt-4">Recent Transactions</h2>
-        <div id="transactions-table" class="card">
-          <div class="card-body">
-            <div class="loading">Loading transactions...</div>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr><th>Week</th><th>Type</th><th>Status</th><th>Rosters Involved</th><th>Date</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="section-title">Money Leaderboard</div>
+    <table id="money-leaderboard">
+      <thead>
+        <tr><th>Rank</th><th>Owner</th><th>Team</th><th>Wins</th><th>Total Bonuses</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-      <!-- Weekly History Page -->
-      <div id="history" class="page-content" style="display:none;">
-        <h2 class="mt-4">Weekly High Scorer History</h2>
-        <div id="weekly-history" class="card">
-          <div class="card-body">
-            <div class="loading">Loading history...</div>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr><th>Week</th><th>Winner</th><th>Points</th><th>Bonus Amount</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div id="standings" class="page" style="display:none">
+    <div class="section-title">Standings</div>
+    <table id="standings-table">
+      <thead>
+        <tr><th>Rank</th><th>Owner</th><th>Team</th><th>Wins</th><th>Losses</th><th>Ties</th><th>Points For</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    <footer>
-      Data updated automatically every Monday at 2 AM during the regular season.<br>
-      Last updated: <span id="last-updated">Loading...</span>
-    </footer>
+  <div id="matchups" class="page" style="display:none">
+    <div class="section-title">Weekly Matchups</div>
+    <table id="matchups-table">
+      <thead>
+        <tr><th>Week</th><th>Home Team</th><th>Away Team</th><th>Score</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    <!-- Bootstrap JS for navbar toggle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <div id="transactions" class="page" style="display:none">
+    <div class="section-title">Transactions</div>
+    <table id="transactions-table">
+      <thead>
+        <tr><th>Week</th><th>Owner</th><th>Transaction</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    <script>
-      // Helper to format team name
-      function formatOwner(displayName, teamName) {
-        return teamName ? `${displayName} (${teamName})` : displayName;
-      }
+  <div id="last-updated"></div>
+</main>
 
-      function formatRecord(wins, losses, ties) {
-        return `${wins}-${losses}${ties > 0 ? '-' + ties : ''}`;
-      }
+<script>
+  // CSV URLs (your published Google Sheets)
+  const URL_CONFIG = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=0&single=true&output=csv';
+  const URL_OWNERS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1393036626&single=true&output=csv';
+  const URL_ROSTERS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=700134694&single=true&output=csv';
+  const URL_WEEKLY_MATCHUPS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=425633695&single=true&output=csv';
+  const URL_WEEKLY_BONUSES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1704595399&single=true&output=csv';
+  const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1937108615&single=true&output=csv';
 
-      // Page navigation
-      function showPage(pageId) {
-        document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
-        document.getElementById(pageId).style.display = 'block';
-        
-        // Update active nav link
-        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-        document.querySelector(`a[href="javascript:showPage('${pageId}')"]`).classList.add('active');
+  let owners = {}, rosters = {}, bonuses = [], matchups = [], transactions = [], lastWeek = 0;
 
-        // Load data only when page is viewed (lazy loading for speed)
-        if (pageId === 'home' && !window.homeLoaded) loadHomeData();
-        if (pageId === 'standings' && !window.standingsLoaded) loadStandings();
-        if (pageId === 'transactions' && !window.transactionsLoaded) loadTransactions();
-        if (pageId === 'history' && !window.historyLoaded) loadWeeklyHistory();
-      }
+  // CSV helper
+  function csvToArray(csv) {
+    const lines = csv.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    return lines.slice(1).map(line => {
+      const obj = {};
+      line.split(',').forEach((v,i)=> obj[headers[i]] = v.trim());
+      return obj;
+    });
+  }
 
-      // Load Home Page Data
-      function loadHomeData() {
-        window.homeLoaded = true;
-        google.script.run.withSuccessHandler(displayLatestWinner).getLatestWeekWinner();
-        google.script.run.withSuccessHandler(displayMoneyLeaderboard).getMoneyLeaderboard();
-      }
+  async function loadData() {
+    const [ownersCsv, rostersCsv, bonusesCsv, matchupsCsv, transactionsCsv, configCsv] = await Promise.all([
+      fetch(URL_OWNERS).then(r=>r.text()),
+      fetch(URL_ROSTERS).then(r=>r.text()),
+      fetch(URL_WEEKLY_BONUSES).then(r=>r.text()),
+      fetch(URL_WEEKLY_MATCHUPS).then(r=>r.text()),
+      fetch(URL_TRANSACTIONS).then(r=>r.text()),
+      fetch(URL_CONFIG).then(r=>r.text())
+    ]);
 
-      function displayLatestWinner(winner) {
-        const container = document.getElementById('latest-winner').querySelector('.card-body');
-        if (!winner) {
-          container.innerHTML = '<p>No weekly winners recorded yet.</p>';
-          return;
-        }
-        container.innerHTML = `
-          <h4>Week ${winner.week}</h4>
-          <h5>${formatOwner(winner.display_name, winner.team_name)}</h5>
-          <p><strong>${winner.points.toFixed(2)} points</strong></p>
-          <p>Won $${winner.amount} high score bonus</p>
-        `;
-      }
+    // Parse data
+    csvToArray(ownersCsv).forEach(o=> owners[o.owner_id]={ display_name:o.display_name, team_name:o.team_name });
+    csvToArray(rostersCsv).forEach(r=> rosters[r.owner_id] = r);
+    bonuses = csvToArray(bonusesCsv);
+    matchups = csvToArray(matchupsCsv);
+    transactions = csvToArray(transactionsCsv);
 
-      function displayMoneyLeaderboard(leaderboard) {
-        const tbody = document.querySelector('#money-leaderboard tbody');
-        const loading = document.querySelector('#money-leaderboard .loading');
-        loading.style.display = 'none';
-        tbody.innerHTML = '';
-        if (leaderboard.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4">No bonuses awarded yet.</td></tr>';
-          return;
-        }
-        leaderboard.forEach(entry => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${entry.rank}</td>
-            <td>${formatOwner(entry.display_name, entry.team_name)}</td>
-            <td>$${entry.total_bonuses}</td>
-            <td>${entry.wins}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
+    const configRows = csvToArray(configCsv);
+    const weekRow = configRows.find(r => r.Key === 'LastProcessedWeek');
+    lastWeek = weekRow ? weekRow.Value : 0;
+    document.getElementById('last-updated').textContent = lastWeek>0?`Week ${lastWeek} processed`:'No weeks processed yet';
 
-      // Load Standings
-      function loadStandings() {
-        window.standingsLoaded = true;
-        google.script.run.withSuccessHandler(displayStandings).getLeagueStandings();
-      }
+    loadHome();
+    loadStandings();
+    loadMatchups();
+    loadTransactions();
+  }
 
-      function displayStandings(standings) {
-        const tbody = document.querySelector('#standings-table tbody');
-        const loading = document.querySelector('#standings-table .loading');
-        loading.style.display = 'none';
-        tbody.innerHTML = '';
-        standings.forEach(entry => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${entry.rank}</td>
-            <td>${formatOwner(entry.display_name, entry.team_name)}</td>
-            <td>${formatRecord(entry.wins, entry.losses, entry.ties)}</td>
-            <td>${entry.points_for.toFixed(2)}</td>
-            <td>${entry.points_against.toFixed(2)}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
+  function loadHome() {
+    // Latest winner
+    const latest = bonuses.sort((a,b)=>b.week-a.week)[0];
+    if(latest){
+      const owner = owners[latest.owner_id];
+      document.getElementById('latest-winner').textContent = `${owner.display_name} (${owner.team_name}) won $${latest.amount} in Week ${latest.week}`;
+    }
 
-      // Load Transactions
-      function loadTransactions() {
-        window.transactionsLoaded = true;
-        google.script.run.withSuccessHandler(displayTransactions).getRecentTransactions(20);
-      }
+    // Money leaderboard
+    const moneyMap = {};
+    bonuses.forEach(b=>{
+      if(!moneyMap[b.owner_id]) moneyMap[b.owner_id]={ total:0, wins:0, owner: owners[b.owner_id] };
+      moneyMap[b.owner_id].total+=Number(b.amount);
+      moneyMap[b.owner_id].wins+=1;
+    });
 
-      function displayTransactions(transactions) {
-        const tbody = document.querySelector('#transactions-table tbody');
-        const loading = document.querySelector('#transactions-table .loading');
-        loading.style.display = 'none';
-        tbody.innerHTML = '';
-        if (transactions.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5">No recent transactions.</td></tr>';
-          return;
-        }
-        transactions.forEach(t => {
-          const date = new Date(t.timestamp).toLocaleDateString();
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${t.week}</td>
-            <td>${t.type.toUpperCase()}</td>
-            <td>${t.status}</td>
-            <td>${t.roster_count}</td>
-            <td>${date}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
+    const leaderboard = Object.values(moneyMap).sort((a,b)=>b.total-a.total);
+    const tbody = document.querySelector('#money-leaderboard tbody');
+    tbody.innerHTML = '';
+    leaderboard.forEach((l,i)=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML=`<td>${i+1}</td><td>${l.owner.display_name}</td><td>${l.owner.team_name}</td><td>${l.wins}</td><td>$${l.total}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
 
-      // Load Weekly History
-      function loadWeeklyHistory() {
-        window.historyLoaded = true;
-        google.script.run.withSuccessHandler(displayWeeklyHistory).getAllWeeklyWinners();
-      }
+  function loadStandings(){
+    const data = Object.values(rosters).sort((a,b)=>b.wins-a.wins || b.points_for-a.points_for);
+    const tbody = document.querySelector('#standings-table tbody');
+    tbody.innerHTML='';
+    data.forEach((r,i)=>{
+      const o = owners[r.owner_id];
+      const tr = document.createElement('tr');
+      tr.innerHTML=`<td>${i+1}</td><td>${o.display_name}</td><td>${o.team_name}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.ties}</td><td>${r.points_for}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
 
-      function displayWeeklyHistory(winners) {
-        const tbody = document.querySelector('#weekly-history tbody');
-        const loading = document.querySelector('#weekly-history .loading');
-        loading.style.display = 'none';
-        tbody.innerHTML = '';
-        if (winners.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4">No weekly winners yet.</td></tr>';
-          return;
-        }
-        winners.forEach(w => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${w.week}</td>
-            <td>${formatOwner(w.display_name, w.team_name)}</td>
-            <td>${w.points.toFixed(2)}</td>
-            <td>$${w.amount}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
+  function loadMatchups(){
+    const tbody = document.querySelector('#matchups-table tbody');
+    tbody.innerHTML='';
+    matchups.forEach(m=>{
+      const home = owners[m.home_owner_id];
+      const away = owners[m.away_owner_id];
+      const tr = document.createElement('tr');
+      tr.innerHTML=`<td>${m.week}</td><td>${home.team_name}</td><td>${away.team_name}</td><td>${m.score}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
 
-      // Update last processed info
-      function updateLastProcessed() {
-        google.script.run.withSuccessHandler(week => {
-          document.getElementById('last-updated').textContent = 
-            week ? `Week ${week} processed` : 'No weeks processed yet';
-        }).getConfigValue('LastProcessedWeek');
-      }
+  function loadTransactions(){
+    const tbody = document.querySelector('#transactions-table tbody');
+    tbody.innerHTML='';
+    transactions.forEach(t=>{
+      const owner = owners[t.owner_id];
+      const tr = document.createElement('tr');
+      tr.innerHTML=`<td>${t.week}</td><td>${owner.team_name}</td><td>${t.transaction}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
 
-      // Initial load: show Home and load its data
-      window.onload = function() {
-        showPage('home');
-        updateLastProcessed();
-      };
-    </script>
-  </body>
+  function showPage(page){
+    document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+    document.getElementById(page).style.display='block';
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`nav button[onclick="showPage('${page}')"]`).classList.add('active');
+  }
+
+  window.onload = loadData;
+</script>
+
+</body>
 </html>
