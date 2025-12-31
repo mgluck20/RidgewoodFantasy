@@ -6,20 +6,25 @@
 <title>Ridgewood Fantasy 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family:'Roboto',sans-serif; margin:0; background:#f4f6f8; color:#333; }
-  header { background:#1e3a8a; color:white; padding:1rem; text-align:center; }
-  nav { display:flex; justify-content:center; gap:2rem; background:#3b82f6; padding:0.5rem 0; }
-  nav button { background:none; border:none; color:white; font-weight:bold; cursor:pointer; font-size:1rem; }
-  nav button.active { border-bottom:2px solid white; }
-  main { padding:2rem; max-width:1200px; margin:auto; }
-  table { width:100%; border-collapse:collapse; margin-top:1rem; }
-  table th, table td { padding:0.5rem; border-bottom:1px solid #ccc; text-align:left; }
-  table th { background:#1e40af; color:white; }
-  .section-title { font-size:1.5rem; margin-bottom:0.5rem; color:#1e3a8a; }
-  #last-updated { margin-top:1rem; font-style:italic; color:#555; }
-  .winner-box { background:#facc15; padding:1rem; border-radius:8px; margin-bottom:1rem; font-weight:bold; font-size:1.2rem; }
-  tr:nth-child(even) { background:#f0f4ff; }
-  tr:hover { background:#e0e7ff; }
+body { font-family:'Roboto',sans-serif; margin:0; background:#f4f6f8; color:#333; }
+header { background:#1e3a8a; color:white; padding:1rem; text-align:center; }
+nav { display:flex; justify-content:center; gap:2rem; background:#3b82f6; padding:0.5rem 0; flex-wrap:wrap; }
+nav button { background:none; border:none; color:white; font-weight:bold; cursor:pointer; font-size:1rem; transition:0.2s; }
+nav button:hover { opacity:0.8; }
+nav button.active { border-bottom:2px solid white; }
+main { padding:2rem; max-width:1200px; margin:auto; }
+table { width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.95rem; }
+table th, table td { padding:0.5rem; border-bottom:1px solid #ccc; text-align:left; }
+table th { background:#1e40af; color:white; cursor:pointer; user-select:none; }
+tr:nth-child(even) { background:#f0f4ff; }
+tr:hover { background:#e0e7ff; }
+.section-title { font-size:1.5rem; margin-bottom:0.5rem; color:#1e3a8a; }
+#winner-box { background:#facc15; padding:1rem; border-radius:8px; margin-bottom:1rem; font-weight:bold; font-size:1.2rem; transition:0.3s; }
+#winner-box span { font-weight:normal; font-size:0.9rem; color:#333; }
+.filter-container { margin-bottom:1rem; display:flex; gap:1rem; flex-wrap:wrap; }
+.filter-container label { font-weight:bold; }
+.filter-container select { padding:0.3rem; }
+.summary-box { background:#e0f2fe; padding:0.8rem; border-radius:6px; margin:0.5rem 0; font-weight:bold; display:inline-block; }
 </style>
 </head>
 <body>
@@ -36,50 +41,71 @@
 </nav>
 
 <main>
-  <div id="home" class="page">
-    <div class="section-title">Latest Winner</div>
-    <div id="latest-winner" class="winner-box">Loading...</div>
+<div id="home" class="page">
+  <div class="section-title">Latest Winner</div>
+  <div id="winner-box">Loading...</div>
 
-    <div class="section-title">Money Leaderboard</div>
-    <table id="money-leaderboard">
-      <thead>
-        <tr><th>Rank</th><th>Owner</th><th>Team</th><th>Wins</th><th>Total Bonuses</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div class="section-title">Money Leaderboard</div>
+  <div class="summary-box" id="total-bonuses">Total Bonuses Paid: $0</div>
+  <table id="money-leaderboard">
+    <thead>
+      <tr><th>Rank</th><th>Owner</th><th>Team</th><th>Wins</th><th>Total Bonuses</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="standings" class="page" style="display:none">
+  <div class="section-title">Standings</div>
+  <table id="standings-table">
+    <thead>
+      <tr>
+        <th onclick="sortTable('standings-table',0)">Rank</th>
+        <th onclick="sortTable('standings-table',1)">Owner</th>
+        <th onclick="sortTable('standings-table',2)">Team</th>
+        <th onclick="sortTable('standings-table',3)">Wins</th>
+        <th onclick="sortTable('standings-table',4)">Losses</th>
+        <th onclick="sortTable('standings-table',5)">Ties</th>
+        <th onclick="sortTable('standings-table',6)">Points For</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="matchups" class="page" style="display:none">
+  <div class="section-title">Weekly Matchups</div>
+  <div class="filter-container">
+    <label for="matchup-week">Week:</label>
+    <select id="matchup-week" onchange="filterMatchups()">
+      <option value="all">All Weeks</option>
+    </select>
   </div>
+  <table id="matchups-table">
+    <thead>
+      <tr><th>Week</th><th>Home Team</th><th>Away Team</th><th>Score</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-  <div id="standings" class="page" style="display:none">
-    <div class="section-title">Standings</div>
-    <table id="standings-table">
-      <thead>
-        <tr><th>Rank</th><th>Owner</th><th>Team</th><th>Wins</th><th>Losses</th><th>Ties</th><th>Points For</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<div id="transactions" class="page" style="display:none">
+  <div class="section-title">Transactions</div>
+  <div class="filter-container">
+    <label for="trans-week">Week:</label>
+    <select id="trans-week" onchange="filterTransactions()">
+      <option value="all">All Weeks</option>
+    </select>
   </div>
+  <table id="transactions-table">
+    <thead>
+      <tr><th>Week</th><th>Owner</th><th>Transaction</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-  <div id="matchups" class="page" style="display:none">
-    <div class="section-title">Weekly Matchups</div>
-    <table id="matchups-table">
-      <thead>
-        <tr><th>Week</th><th>Home Team</th><th>Away Team</th><th>Score</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div id="transactions" class="page" style="display:none">
-    <div class="section-title">Transactions</div>
-    <table id="transactions-table">
-      <thead>
-        <tr><th>Week</th><th>Owner</th><th>Transaction</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div id="last-updated"></div>
+<div id="last-updated"></div>
 </main>
 
 <script>
@@ -123,15 +149,26 @@ async function loadData(){
   lastWeek = weekRow ? Number(weekRow.Value||0) : 0;
   document.getElementById('last-updated').textContent = lastWeek>0?`Week ${lastWeek} processed`:'No weeks processed yet';
 
+  populateWeekFilters();
   loadHome(); loadStandings(); loadMatchups(); loadTransactions();
+}
+
+function populateWeekFilters(){
+  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>Number(t.week))])).sort((a,b)=>a-b);
+  const matchupSelect = document.getElementById('matchup-week');
+  const transSelect = document.getElementById('trans-week');
+  weeks.forEach(w=>{
+    const opt1=document.createElement('option'); opt1.value=w; opt1.text=`Week ${w}`; matchupSelect.appendChild(opt1);
+    const opt2=document.createElement('option'); opt2.value=w; opt2.text=`Week ${w}`; transSelect.appendChild(opt2);
+  });
 }
 
 function loadHome(){
   const latest = bonuses.sort((a,b)=>b.week-a.week)[0];
-  const winnerBox = document.getElementById('latest-winner');
+  const winnerBox = document.getElementById('winner-box');
   if(latest){
     const owner = owners[latest.owner_id]||{ display_name:'Unknown', team_name:'Unknown' };
-    winnerBox.textContent = `${owner.display_name} (${owner.team_name}) won $${latest.amount} in Week ${latest.week}`;
+    winnerBox.innerHTML = `${owner.display_name} (${owner.team_name}) won <strong>$${latest.amount}</strong> in Week ${latest.week}`;
   } else winnerBox.textContent='No winners yet';
 
   const moneyMap={};
@@ -142,11 +179,15 @@ function loadHome(){
   });
   const leaderboard=Object.values(moneyMap).sort((a,b)=>b.total-a.total);
   const tbody=document.querySelector('#money-leaderboard tbody'); tbody.innerHTML='';
+  let totalPaid=0;
   leaderboard.forEach((l,i)=>{
+    totalPaid+=l.total;
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${i+1}</td><td>${l.owner.display_name}</td><td>${l.owner.team_name}</td><td>${l.wins}</td><td>$${l.total}</td>`;
+    if(i<3) tr.style.background='#fde68a'; // highlight top 3
     tbody.appendChild(tr);
   });
+  document.getElementById('total-bonuses').textContent=`Total Bonuses Paid: $${totalPaid}`;
 }
 
 function loadStandings(){
@@ -160,9 +201,9 @@ function loadStandings(){
   });
 }
 
-function loadMatchups(){
+function loadMatchups(filterWeek='all'){
   const tbody=document.querySelector('#matchups-table tbody'); tbody.innerHTML='';
-  matchups.forEach(m=>{
+  matchups.filter(m=>filterWeek==='all'||m.week==filterWeek).forEach(m=>{
     const home=owners[m.home_owner_id]||{ team_name:'Unknown' };
     const away=owners[m.away_owner_id]||{ team_name:'Unknown' };
     const tr=document.createElement('tr');
@@ -171,9 +212,9 @@ function loadMatchups(){
   });
 }
 
-function loadTransactions(){
+function loadTransactions(filterWeek='all'){
   const tbody=document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
-  transactions.forEach(t=>{
+  transactions.filter(t=>filterWeek==='all'||Number(t.week)==filterWeek).forEach(t=>{
     const owner=owners[t.owner_id]||{ team_name:'Unknown' };
     const tr=document.createElement('tr');
     const text=t.transaction||t.Action||'N/A';
@@ -183,11 +224,28 @@ function loadTransactions(){
   });
 }
 
+function filterMatchups(){ loadMatchups(document.getElementById('matchup-week').value); }
+function filterTransactions(){ loadTransactions(document.getElementById('trans-week').value); }
+
 function showPage(page){
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   document.getElementById(page).style.display='block';
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.querySelector(`nav button[onclick="showPage('${page}')"]`).classList.add('active');
+}
+
+function sortTable(tableId, col){
+  const table=document.getElementById(tableId); let switching=true, dir='asc';
+  while(switching){
+    switching=false; const rows=table.rows; for(let i=1;i<rows.length-1;i++){
+      let shouldSwitch=false, x=rows[i].getElementsByTagName('TD')[col], y=rows[i+1].getElementsByTagName('TD')[col];
+      let xContent=x.textContent||x.innerText, yContent=y.textContent||y.innerText;
+      if(!isNaN(xContent) && !isNaN(yContent)){ xContent=Number(xContent); yContent=Number(yContent); }
+      if((dir=='asc' && xContent>yContent) || (dir=='desc' && xContent<yContent)){ shouldSwitch=true; break; }
+    }
+    if(shouldSwitch){ rows[i].parentNode.insertBefore(rows[i+1],rows[i]); switching=true; }
+    else if(dir=='asc'){ dir='desc'; switching=true; }
+  }
 }
 
 window.onload = loadData;
