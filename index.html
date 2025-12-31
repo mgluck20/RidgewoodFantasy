@@ -472,25 +472,16 @@ async function loadData() {
     bonuses = csvToArray(b).map(row => ({...row, week:+row.week, points:+row.points, amount:+row.amount}));
     matchups = csvToArray(m).map(row => ({...row, week:+row.week, points:+row.points}));
     
-    // Transactions – robust JSON parsing
-    // Transactions – robust JSON parsing with single-quote fix and better error handling
+       // Transactions – robust JSON parsing (fixes duplicated quotes like ""12506"")
     transactions = csvToArray(t).map(row => {
-          const safeParse = (field) => {
-      let str = row[field] || '';
-      if (!str || str === 'null' || str.trim() === '' || str === '{}') {
-        return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
-      }
-      str = str.replace(/'/g, '"');     // Handle any single quotes
-      str = str.replace(/""/g, '"');    // ← THIS FIXES YOUR ERRORS: removes duplicated quotes
-      try {
-        return JSON.parse(str);
-      } catch (e) {
-        addDebug(`JSON parse error in ${field} (week ${row.week || '?'}): ${str.substring(0, 100)}...`);
-        return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
-      }
-    };
-        // Fix single quotes → double quotes
+      const safeParse = (field) => {
+        let str = row[field] || '';
+        if (!str || str === 'null' || str.trim() === '' || str === '{}') {
+          return (field === 'draft_picks' || field === 'waiver_budget') ? [] : {};
+        }
+        // Fix single quotes (rare) and duplicated double quotes (your main issue)
         str = str.replace(/'/g, '"');
+        str = str.replace(/""/g, '"');
         try {
           return JSON.parse(str);
         } catch (e) {
@@ -509,8 +500,7 @@ async function loadData() {
         draft_picks: safeParse('draft_picks'),
         waiver_budget: safeParse('waiver_budget')
       };
-    }).filter(t => t.week > 0); // Only valid weeks
-
+    }).filter(t => t.week > 0);
     const config = csvToArray(c);
     lastWeek = config.find(r=>r.Key==='LastProcessedWeek') ? Math.min(+config.find(r=>r.Key==='LastProcessedWeek').Value,17) : 17;
 
@@ -759,5 +749,6 @@ window.onload = loadData;
 </script>
 </body>
 </html>
+
 
 
