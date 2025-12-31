@@ -575,7 +575,7 @@ async function loadData() {
     }));
 
     const config = csvToArray(c);
-    lastWeek = config.find(r=>r.Key==='LastProcessedWeek') ? Math.min(+config.find(r=>r.Key==='LastProcessedWeek').Value,17) : 17;
+    lastWeek = config.find(r=>r.Key==='LastProcessedWeek') ? +config.find(r=>r.Key==='LastProcessedWeek').Value : 17;
 
     document.getElementById('last-updated').textContent = `Data up to Week ${lastWeek} • ${new Date().toLocaleString()}`;
 
@@ -854,29 +854,19 @@ function renderMatchup(matchup, isChamp = false) {
 function loadPlayoffs() {
   const bracket = document.getElementById('playoff-bracket');
 
-  // Check if there is any playoff data
+  // If no playoff data at all
   if (playoffMatchups.length === 0) {
     bracket.innerHTML = `
       <div class="playoff-message">
         <div style="font-size:5rem;opacity:0.3;margin-bottom:1rem;">🏆</div>
-        <div style="font-size:2.5rem;font-weight:700;color:#00ffbb;">No Playoff Data Available Yet</div>
-        <div style="margin-top:1rem;opacity:0.7;font-size:1.2rem;">Playoffs will appear here once Week 15 begins</div>
+        <div style="font-size:2.5rem;font-weight:700;color:#00ffbb;">Playoff Data Not Yet Available</div>
+        <div style="margin-top:1rem;opacity:0.7;font-size:1.2rem;">Bracket will appear once playoffs begin</div>
       </div>
     `;
     return;
   }
 
-  if (lastWeek < 15) {
-    bracket.innerHTML = `
-      <div class="playoff-message">
-        <div style="font-size:5rem;opacity:0.3;margin-bottom:1rem;">🏆</div>
-        <div style="font-size:3rem;font-weight:700;color:#00ffbb;">Season In Progress</div>
-        <div style="margin-top:1rem;opacity:0.7;font-size:1.4rem;">Playoffs begin in Week 15</div>
-      </div>
-    `;
-    return;
-  }
-
+  // Always show the bracket if there is any playoff data
   let html = '<div class="playoff-container">';
 
   // Quarterfinals
@@ -900,13 +890,14 @@ function loadPlayoffs() {
     html += '<div class="matchup-box champ"><div style="text-align:center;padding:4rem;opacity:0.6;">Championship TBD</div></div>';
   } else {
     html += renderMatchup(champ[0], true);
-    if (lastWeek >= 17 && champ[0].winner) {
+    if (champ[0].winner) {
       html += `<div class="champion-banner">🏆 CHAMPION: ${champ[0].winner.name} 🏆</div>`;
     }
   }
   html += '</div></div>';
 
-  if (lastWeek >= 17) {
+  // Season ended message only if we have Week 17 data
+  if (playoffMatchups.some(m => m.week === 17)) {
     html += '<div style="text-align:center;margin-top:4rem;"><h2 style="font-size:4rem;color:#FFD700;text-shadow:0 0 40px gold;">SEASON ENDED</h2></div>';
   }
 
