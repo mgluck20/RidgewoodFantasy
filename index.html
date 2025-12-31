@@ -269,16 +269,22 @@ table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.08); }
 .playoff-container {
   display: flex;
   flex-direction: column;
-  gap: 4rem;
-  margin-top: 2rem;
-}
-.playoff-section {
-  text-align: center;
+  gap: 5rem;
 }
 .playoff-section h2 {
-  font-size: 2.2rem;
+  text-align: center;
+  font-size: 2.4rem;
   margin-bottom: 2rem;
-  color: #00d4ff;
+  color: #00ffbb;
+}
+.playoff-round {
+  margin-bottom: 3rem;
+}
+.playoff-round h3 {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 1.5rem;
+  opacity: .9;
 }
 .playoff-grid {
   display: grid;
@@ -287,48 +293,27 @@ table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.08); }
   justify-items: center;
 }
 .matchup-box {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
-  padding: 1.5rem;
   width: 320px;
-  border: 2px solid rgba(255,255,255,0.2);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-.matchup-box.winner-border {
-  border-color: #00ffbb;
-}
-.matchup-box.champ {
-  transform: scale(1.15);
-  border-width: 4px;
+  background: rgba(255,255,255,.1);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,.2);
 }
 .matchup-team {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  margin-bottom: .5rem;
 }
 .matchup-team.win {
-  opacity: 1;
-}
-.matchup-team.loss {
-  opacity: 0.6;
+  color: #00ffbb;
+  font-weight: 800;
 }
 .vs {
   text-align: center;
-  font-size: 1.4rem;
-  opacity: 0.8;
-  margin: 1rem 0;
-}
-.champion-banner {
-  padding: 2rem;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #000;
-  border-radius: 20px;
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 800;
-  box-shadow: 0 12px 40px rgba(255,212,0,0.5);
+  margin: .75rem 0;
+  opacity: .7;
 }
 .playoff-message {
   text-align: center;
@@ -435,11 +420,12 @@ const URL_ROSTERS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sH
 const URL_WEEKLY_MATCHUPS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=425633695&single=true&output=csv';
 const URL_WEEKLY_BONUSES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1704595399&single=true&output=csv';
 const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1937108615&single=true&output=csv';
-const URL_PLAYOFF_MATCHUPS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1805847431&single=true&output=csv';
+const URL_PLAYOFF_WINNERS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1649057338&single=true&output=csv';
+const URL_PLAYOFF_LOSERS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=804757137&single=true&output=csv';
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
 const SLEEPER_TRENDING_URL = 'https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=25';
 
-let owners = {}, rosters = {}, bonuses = [], matchups = [], transactions = [], playoffMatchups = [], lastWeek = 17;
+let owners = {}, rosters = {}, bonuses = [], matchups = [], transactions = [], lastWeek = 17;
 let rosterToOwner = {};
 let sleeperPlayers = {};
 
@@ -525,14 +511,13 @@ async function loadTrendingPlayers() {
 async function loadData() {
   try {
     await loadSleeperPlayers();
-    const [o,r,b,m,t,c,p] = await Promise.all([
+    const [o,r,b,m,t,c] = await Promise.all([
       fetch(URL_OWNERS).then(r=>r.text()),
       fetch(URL_ROSTERS).then(r=>r.text()),
       fetch(URL_WEEKLY_BONUSES).then(r=>r.text()),
       fetch(URL_WEEKLY_MATCHUPS).then(r=>r.text()),
       fetch(URL_TRANSACTIONS).then(r=>r.text()),
-      fetch(URL_CONFIG).then(r=>r.text()),
-      fetch(URL_PLAYOFF_MATCHUPS).then(r=>r.text())
+      fetch(URL_CONFIG).then(r=>r.text())
     ]);
 
     csvToArray(o).forEach(row => owners[row.owner_id] = {display_name:row.display_name, team_name:row.team_name});
@@ -570,14 +555,6 @@ async function loadData() {
         waiver_budget: safeParse('waiver_budget')
       };
     }).filter(t => t.week > 0);
-
-    playoffMatchups = csvToArray(p).map(row => ({
-      week: +row.week,
-      roster_id: row.roster_id,
-      matchup_id: row.matchup_id,
-      points: +row.points,
-      round: +row.round
-    }));
 
     const config = csvToArray(c);
     lastWeek = config.find(r=>r.Key==='LastProcessedWeek') ? +config.find(r=>r.Key==='LastProcessedWeek').Value : 17;
@@ -810,99 +787,80 @@ function loadTransactions(filter='all') {
   });
 }
 
-function getPlayoffPairs(week) {
-  const weekData = playoffMatchups.filter(m => m.week === week);
-  const pairs = {};
-  weekData.forEach(m => {
-    pairs[m.matchup_id] = pairs[m.matchup_id] || [];
-    pairs[m.matchup_id].push(m);
+/* =========================
+   PLAYOFF BRACKET - NEW INTEGRATION
+========================= */
+function csvToArray(csv){
+  const lines=csv.trim().split('\n');
+  if(lines.length<2) return [];
+  const headers=lines[0].split(',').map(h=>h.trim());
+  return lines.slice(1).map(line=>{
+    const obj={},vals=line.split(',');
+    headers.forEach((h,i)=>obj[h]=vals[i]?.trim()||'');
+    return obj;
   });
-  return Object.values(pairs).map(pair => {
-    if (pair.length < 2) return null;
-    const teams = pair.map(p => ({
-      roster_id: p.roster_id,
-      name: getTeamName(owners[rosterToOwner[p.roster_id]] || {display_name:'Unknown'}),
-      points: p.points.toFixed(1),
-      logo: createTeamLogo(getTeamName(owners[rosterToOwner[p.roster_id]] || {display_name:'Unknown'}))
-    }));
-    const winner = teams[0].points > teams[1].points ? teams[0] : teams[1].points > teams[0].points ? teams[1] : null;
-    return {teams, winner};
-  }).filter(p => p);
 }
-
-function renderMatchup(matchup, isChamp = false) {
-  if (!matchup || matchup.teams.length < 2) {
-    return '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">TBD / Bye</div></div>';
-  }
-  const t1 = matchup.teams[0], t2 = matchup.teams[1];
+function groupByRound(data){
+  const rounds={};
+  data.forEach(m=>{
+    rounds[m.round]=rounds[m.round]||[];
+    rounds[m.round].push(m);
+  });
+  return rounds;
+}
+function renderMatch(m){
+  const p1=m.p1_score||'';
+  const p2=m.p2_score||'';
+  const t1Name = getTeamName(owners[rosterToOwner[m.t1]] || {});
+  const t2Name = getTeamName(owners[rosterToOwner[m.t2]] || {});
   return `
-    <div class="matchup-box ${matchup.winner ? 'winner-border' : ''} ${isChamp ? 'champ' : ''}">
-      <div class="matchup-team ${matchup.winner === t1 ? 'win' : 'loss'}">
-        ${t1.logo}
-        <div>
-          <div style="font-weight:700;font-size:1.2rem;">${t1.name}</div>
-          <div style="font-size:1.6rem;color:#00ffbb;font-weight:800;">${t1.points}</div>
-        </div>
+    <div class="matchup-box">
+      <div class="matchup-team ${m.w===m.t1?'win':''}">
+        <span>${t1Name||'TBD'}</span><span>${p1}</span>
       </div>
       <div class="vs">VS</div>
-      <div class="matchup-team ${matchup.winner === t2 ? 'win' : 'loss'}">
-        ${t2.logo}
-        <div>
-          <div style="font-weight:700;font-size:1.2rem;">${t2.name}</div>
-          <div style="font-size:1.6rem;color:#00ffbb;font-weight:800;">${t2.points}</div>
-        </div>
+      <div class="matchup-team ${m.w===m.t2?'win':''}">
+        <span>${t2Name||'TBD'}</span><span>${p2}</span>
       </div>
-    </div>
-  `;
+    </div>`;
 }
-
-function loadPlayoffs() {
-  const bracket = document.getElementById('playoff-bracket');
-
-  // Force show bracket if any playoff data exists
-  if (playoffMatchups.length > 0) {
-    let html = '<div class="playoff-container">';
-
-    html += '<div class="playoff-section"><h2>Quarterfinals (Week 15)</h2><div class="playoff-grid">';
-    const qf = getPlayoffPairs(15);
-    if (qf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
-    qf.forEach(m => html += renderMatchup(m));
-    html += '</div></div>';
-
-    html += '<div class="playoff-section"><h2>Semifinals (Week 16)</h2><div class="playoff-grid">';
-    const sf = getPlayoffPairs(16);
-    if (sf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
-    sf.forEach(m => html += renderMatchup(m));
-    html += '</div></div>';
-
-    html += '<div class="playoff-section"><h2>Championship (Week 17)</h2><div class="playoff-grid">';
-    const champ = getPlayoffPairs(17);
-    if (champ.length === 0) {
-      html += '<div class="matchup-box champ"><div style="text-align:center;padding:4rem;opacity:0.6;">Championship TBD</div></div>';
-    } else {
-      html += renderMatchup(champ[0], true);
-      if (champ[0].winner) {
-        html += `<div class="champion-banner">🏆 CHAMPION: ${champ[0].winner.name} 🏆</div>`;
-      }
+function renderBracket(title,data){
+  if(data.length===0) return '';
+  const rounds=groupByRound(data);
+  let html=`<div class="playoff-section"><h2>${title}</h2>`;
+  Object.keys(rounds).sort((a,b)=>a-b).forEach(r=>{
+    html+=`<div class="playoff-round"><h3>Round ${r}</h3><div class="playoff-grid">`;
+    rounds[r].forEach(m=>html+=renderMatch(m));
+    html+='</div></div>';
+  });
+  return html+'</div>';
+}
+async function loadPlayoffs(){
+  const bracket=document.getElementById('playoff-bracket');
+  try{
+    const [w,l]=await Promise.all([
+      fetch(URL_PLAYOFF_WINNERS).then(r=>r.text()),
+      fetch(URL_PLAYOFF_LOSERS).then(r=>r.text())
+    ]);
+    const winners=csvToArray(w);
+    const losers=csvToArray(l);
+    if(winners.length===0 && losers.length===0){
+      bracket.innerHTML=`
+        <div class="playoff-message">
+          <div class="trophy">🏆</div>
+          <div style="font-size:2.5rem;font-weight:700;color:#00ffbb;">Playoff Data Not Yet Available</div>
+          <div style="margin-top:1rem;opacity:0.7;font-size:1.2rem;">Bracket will appear once playoffs begin</div>
+        </div>`;
+      return;
     }
-    html += '</div></div>';
-
-    if (playoffMatchups.some(m => m.week === 17)) {
-      html += '<div style="text-align:center;margin-top:4rem;"><h2 style="font-size:4rem;color:#FFD700;text-shadow:0 0 40px gold;">SEASON ENDED</h2></div>';
-    }
-
-    bracket.innerHTML = html;
-    return;
+    bracket.innerHTML=`
+      <div class="playoff-container">
+        ${renderBracket('Winners Bracket',winners)}
+        ${renderBracket('Losers Bracket',losers)}
+      </div>`;
+  }catch(e){
+    bracket.innerHTML='<div class="playoff-message">Error loading bracket data</div>';
   }
-
-  // Only if absolutely no data
-  bracket.innerHTML = `
-    <div class="playoff-message">
-      <div class="trophy">🏆</div>
-      <div style="font-size:2.5rem;font-weight:700;color:#00ffbb;">Playoff Data Not Yet Available</div>
-      <div style="margin-top:1rem;opacity:0.7;font-size:1.2rem;">Bracket will appear once playoffs begin</div>
-    </div>
-  `;
 }
 
 function filterMatchups() {
