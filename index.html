@@ -332,9 +332,14 @@ table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.08); }
 }
 .playoff-message {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 6rem 2rem;
   font-size: 1.8rem;
   opacity: 0.8;
+}
+.playoff-message .trophy {
+  font-size: 5rem;
+  opacity: 0.3;
+  margin-bottom: 1rem;
 }
 @media (max-width: 768px) {
   header h1 { font-size:1.8rem; }
@@ -854,48 +859,50 @@ function renderMatchup(matchup, isChamp = false) {
 function loadPlayoffs() {
   const bracket = document.getElementById('playoff-bracket');
 
-  if (playoffMatchups.length === 0) {
-    bracket.innerHTML = `
-      <div class="playoff-message">
-        <div style="font-size:5rem;opacity:0.3;margin-bottom:1rem;">🏆</div>
-        <div style="font-size:2.5rem;font-weight:700;color:#00ffbb;">Playoff Data Not Yet Available</div>
-        <div style="margin-top:1rem;opacity:0.7;font-size:1.2rem;">Bracket will appear once playoffs begin</div>
-      </div>
-    `;
+  // Force show bracket if any playoff data exists
+  if (playoffMatchups.length > 0) {
+    let html = '<div class="playoff-container">';
+
+    html += '<div class="playoff-section"><h2>Quarterfinals (Week 15)</h2><div class="playoff-grid">';
+    const qf = getPlayoffPairs(15);
+    if (qf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
+    qf.forEach(m => html += renderMatchup(m));
+    html += '</div></div>';
+
+    html += '<div class="playoff-section"><h2>Semifinals (Week 16)</h2><div class="playoff-grid">';
+    const sf = getPlayoffPairs(16);
+    if (sf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
+    sf.forEach(m => html += renderMatchup(m));
+    html += '</div></div>';
+
+    html += '<div class="playoff-section"><h2>Championship (Week 17)</h2><div class="playoff-grid">';
+    const champ = getPlayoffPairs(17);
+    if (champ.length === 0) {
+      html += '<div class="matchup-box champ"><div style="text-align:center;padding:4rem;opacity:0.6;">Championship TBD</div></div>';
+    } else {
+      html += renderMatchup(champ[0], true);
+      if (champ[0].winner) {
+        html += `<div class="champion-banner">🏆 CHAMPION: ${champ[0].winner.name} 🏆</div>`;
+      }
+    }
+    html += '</div></div>';
+
+    if (playoffMatchups.some(m => m.week === 17)) {
+      html += '<div style="text-align:center;margin-top:4rem;"><h2 style="font-size:4rem;color:#FFD700;text-shadow:0 0 40px gold;">SEASON ENDED</h2></div>';
+    }
+
+    bracket.innerHTML = html;
     return;
   }
 
-  let html = '<div class="playoff-container">';
-
-  html += '<div class="playoff-section"><h2>Quarterfinals (Week 15)</h2><div class="playoff-grid">';
-  const qf = getPlayoffPairs(15);
-  if (qf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
-  qf.forEach(m => html += renderMatchup(m));
-  html += '</div></div>';
-
-  html += '<div class="playoff-section"><h2>Semifinals (Week 16)</h2><div class="playoff-grid">';
-  const sf = getPlayoffPairs(16);
-  if (sf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
-  sf.forEach(m => html += renderMatchup(m));
-  html += '</div></div>';
-
-  html += '<div class="playoff-section"><h2>Championship (Week 17)</h2><div class="playoff-grid">';
-  const champ = getPlayoffPairs(17);
-  if (champ.length === 0) {
-    html += '<div class="matchup-box champ"><div style="text-align:center;padding:4rem;opacity:0.6;">Championship TBD</div></div>';
-  } else {
-    html += renderMatchup(champ[0], true);
-    if (champ[0].winner) {
-      html += `<div class="champion-banner">🏆 CHAMPION: ${champ[0].winner.name} 🏆</div>`;
-    }
-  }
-  html += '</div></div>';
-
-  if (playoffMatchups.some(m => m.week === 17)) {
-    html += '<div style="text-align:center;margin-top:4rem;"><h2 style="font-size:4rem;color:#FFD700;text-shadow:0 0 40px gold;">SEASON ENDED</h2></div>';
-  }
-
-  bracket.innerHTML = html;
+  // Only if absolutely no data
+  bracket.innerHTML = `
+    <div class="playoff-message">
+      <div class="trophy">🏆</div>
+      <div style="font-size:2.5rem;font-weight:700;color:#00ffbb;">Playoff Data Not Yet Available</div>
+      <div style="margin-top:1rem;opacity:0.7;font-size:1.2rem;">Bracket will appear once playoffs begin</div>
+    </div>
+  `;
 }
 
 function filterMatchups() {
