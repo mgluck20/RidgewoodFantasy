@@ -153,7 +153,7 @@ main {
   top:50%;
   transform:translateY(-50%);
   font-size:4rem;
-  opacity:0.2;
+  opacity:0.5;
 }
 
 .stats-grid {
@@ -537,7 +537,8 @@ table tbody tr td {
       <div class="playoff-placeholder">🏆</div>
       <div class="playoff-text">2025 Season Complete!</div>
       <div class="playoff-note">
-        The 2025 fantasy season has concluded. Playoff results and bracket are available directly in the Sleeper app. This historical view will remain until June 2026.
+        The 2025 fantasy season has concluded. Full playoff bracket and results are available in the Sleeper app.<br>
+        This page will remain as a historical reference until June 2026.
       </div>
     </div>
   </div>
@@ -768,6 +769,7 @@ function loadHome(){
 
   const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
   const totalTeams = Object.keys(owners).length;
+  const weeksPlayed = Math.min(lastWeek || 0, 17);
 
   const statsGrid = document.getElementById('stats-grid');
   statsGrid.innerHTML = `
@@ -780,7 +782,7 @@ function loadHome(){
       <div class="stat-label">Teams</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">${lastWeek || '18'}</div>
+      <div class="stat-value">${weeksPlayed}</div>
       <div class="stat-label">Weeks Played</div>
     </div>
   `;
@@ -914,29 +916,11 @@ function loadTransactions(filterWeek='all'){
       const owner = owners[ownerId] || { display_name:'Unknown', team_name:'' };
       const teamName = getTeamName(owner);
       
-      let details = 'No details';
+      let details = 'No details available';
       let typeDisplay = (t.type || 'UNKNOWN').toUpperCase().replace('_', ' ');
       let typeKey = (t.type || 'add').toLowerCase().replace(' ', '-');
       if(typeKey === 'free_agent') typeDisplay = 'FREE AGENT';
       const badgeClass = `transaction-${typeKey}`;
-      
-      if (t.adds) {
-        const adds = Object.keys(JSON.parse(t.adds || '{}'));
-        if (adds.length > 0) {
-          details = `Added ${getPlayerName(adds[0])}`;
-          if (adds.length > 1) details += ` (+${adds.length - 1} more)`;
-        }
-      } else if (t.drops) {
-        const drops = Object.keys(JSON.parse(t.drops || '{}'));
-        if (drops.length > 0) {
-          details = `Dropped ${getPlayerName(drops[0])}`;
-          if (drops.length > 1) details += ` (+${drops.length - 1} more)`;
-        }
-      } else if (typeDisplay === 'TRADE') {
-        details = 'Trade executed';
-      } else {
-        details = 'Waiver claim';
-      }
       
       const tr=document.createElement('tr');
       tr.innerHTML=`
