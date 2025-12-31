@@ -537,7 +537,7 @@ table tbody tr td {
       <div class="playoff-placeholder">🏆</div>
       <div class="playoff-text">2025 Season Complete!</div>
       <div class="playoff-note">
-        The 2025 fantasy season has concluded. Historical playoff bracket and results will remain available for viewing until June 2026.
+        The 2025 fantasy season has concluded. Playoff results and bracket are available directly in the Sleeper app. This historical view will remain until June 2026.
       </div>
     </div>
   </div>
@@ -610,6 +610,7 @@ function getPlayerName(playerId) {
 
 function csvToArray(csv){
   const lines = csv.trim().split('\n');
+  if (lines.length < 1) return [];
   const headers = lines[0].split(',').map(h=>h.trim());
   return lines.slice(1).map(line=>{
     const values = [];
@@ -634,8 +635,10 @@ function csvToArray(csv){
 async function loadSleeperPlayers() {
   try {
     const response = await fetch(SLEEPER_PLAYERS_URL);
-    sleeperPlayers = await response.json();
-    addDebug(`Loaded ${Object.keys(sleeperPlayers).length} Sleeper players`);
+    if (response.ok) {
+      sleeperPlayers = await response.json();
+      addDebug(`Loaded ${Object.keys(sleeperPlayers).length} Sleeper players`);
+    }
   } catch(error) {
     addDebug(`Error loading Sleeper players: ${error.message}`);
   }
@@ -644,6 +647,7 @@ async function loadSleeperPlayers() {
 async function loadTrendingPlayers() {
   try {
     const response = await fetch(SLEEPER_TRENDING_URL);
+    if (!response.ok) throw new Error('Trending API error');
     const trending = await response.json();
     const container = document.getElementById('trending-players');
     
@@ -690,9 +694,11 @@ async function loadData(){
     addDebug('All CSVs fetched successfully');
 
     const ownersArray = csvToArray(ownersCsv);
+    addDebug(`Owners loaded: ${ownersArray.length}`);
     ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'' });
     
     const rostersArray = csvToArray(rostersCsv);
+    addDebug(`Rosters loaded: ${rostersArray.length}`);
     rostersArray.forEach(r=>{
       rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) };
       if(r.roster_id && r.owner_id) {
@@ -700,7 +706,8 @@ async function loadData(){
       }
     });
     
-    bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0)}));
+    bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0), bonus_type: b.bonus_type || 'HIGH_SCORE'}));
+    addDebug(`Bonuses loaded: ${bonuses.length}`);
     
     matchups = csvToArray(matchupsCsv).map(m=>({...m, week:Number(m.week||0), points:Number(m.points||0)}));
     
@@ -709,7 +716,8 @@ async function loadData(){
     const configRows = csvToArray(configCsv);
     const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
     lastWeek = weekRow ? Number(weekRow.Value||0) : 0;
-    document.getElementById('last-updated').textContent = lastWeek > 0 ? `Last Updated: Week ${lastWeek}` : '';
+    addDebug(`LastProcessedWeek: ${lastWeek}`);
+    document.getElementById('last-updated').textContent = lastWeek > 0 ? `Last Updated: Week ${lastWeek}` : 'Data loading complete';
 
     populateWeekFilters();
     populateTeamFilter();
@@ -727,14 +735,12 @@ async function loadData(){
 }
 
 function populateWeekFilters(){
-  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>Number(t.week||0))])).sort((a,b)=>a-b);
+  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>Number(t.week||0))])).filter(w => w > 0).sort((a,b)=>a-b);
   const matchupSelect = document.getElementById('matchup-week');
   const transSelect = document.getElementById('trans-week');
   weeks.forEach(w=>{
-    if(w > 0){
-      const opt1=document.createElement('option'); opt1.value=w; opt1.text=`Week ${w}`; matchupSelect.appendChild(opt1);
-      const opt2=document.createElement('option'); opt2.value=w; opt2.text=`Week ${w}`; transSelect.appendChild(opt2);
-    }
+    const opt1=document.createElement('option'); opt1.value=w; opt1.text=`Week ${w}`; matchupSelect.appendChild(opt1);
+    const opt2=document.createElement('option'); opt2.value=w; opt2.text=`Week ${w}`; transSelect.appendChild(opt2);
   });
 }
 
@@ -752,8 +758,8 @@ function populateTeamFilter(){
 function loadHome(){
   const latest = bonuses.sort((a,b)=>b.week-a.week)[0];
   const winnerBox = document.getElementById('winner-box');
-  if(latest && latest.owner_id){
-    const owner = owners[latest.owner_id] || { display_name:'Unknown', team_name:'' };
+  if(latest && latest.owner_id && owners[latest.owner_id]){
+    const owner = owners[latest.owner_id];
     const teamName = getTeamName(owner);
     winnerBox.innerHTML = `${createTeamLogo(teamName)} <span style="vertical-align:middle;">${owner.display_name} (${teamName}) won <strong>$${latest.amount}</strong> in Week ${latest.week}!</span>`;
   } else {
@@ -774,19 +780,20 @@ function loadHome(){
       <div class="stat-label">Teams</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">${lastWeek}</div>
+      <div class="stat-value">${lastWeek || '18'}</div>
       <div class="stat-label">Weeks Played</div>
     </div>
   `;
 
   const moneyMap = {};
-  Object.values(owners).forEach(o => {
-    moneyMap[o.owner_id] = { total:0, wins:0, owner: o };
+  Object.keys(owners).forEach(ownerId => {
+    moneyMap[ownerId] = { total:0, wins:0, owner: owners[ownerId] };
   });
   bonuses.forEach(b=>{
-    if(moneyMap[b.owner_id]){
-      moneyMap[b.owner_id].total += b.amount;
-      if(b.bonus_type === 'HIGH_SCORE') moneyMap[b.owner_id].wins += 1;
+    const mapEntry = moneyMap[b.owner_id];
+    if(mapEntry){
+      mapEntry.total += b.amount;
+      if(b.bonus_type === 'HIGH_SCORE' || b.bonus_type.includes('HIGH')) mapEntry.wins += 1;
     }
   });
 
@@ -900,32 +907,32 @@ function loadTransactions(filterWeek='all'){
   const tbody = document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
   transactions
     .filter(t => filterWeek==='all' || Number(t.week||0) == Number(filterWeek))
-    .sort((a,b) => b.week - a.week || (b.timestamp || 0) - (a.timestamp || 0))
+    .sort((a,b) => (b.week || 0) - (a.week || 0) || (b.timestamp || 0) - (a.timestamp || 0))
     .forEach(t=>{
       const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0].trim() : '';
       const ownerId = rosterToOwner[rosterIds] || '';
       const owner = owners[ownerId] || { display_name:'Unknown', team_name:'' };
       const teamName = getTeamName(owner);
       
-      let details = '';
-      let typeDisplay = (t.type || 'ADD').toUpperCase().replace('_', ' ');
-      let typeKey = t.type ? t.type.toLowerCase().replace(' ', '-') : 'add';
-      if(typeKey === 'free_agent') typeKey = 'free-agent';
+      let details = 'No details';
+      let typeDisplay = (t.type || 'UNKNOWN').toUpperCase().replace('_', ' ');
+      let typeKey = (t.type || 'add').toLowerCase().replace(' ', '-');
+      if(typeKey === 'free_agent') typeDisplay = 'FREE AGENT';
       const badgeClass = `transaction-${typeKey}`;
       
-      if(t.adds){
-        const adds = Object.keys(t.adds);
-        if(adds.length > 0){
+      if (t.adds) {
+        const adds = Object.keys(JSON.parse(t.adds || '{}'));
+        if (adds.length > 0) {
           details = `Added ${getPlayerName(adds[0])}`;
-          if(adds.length > 1) details += ` (+${adds.length-1} more)`;
+          if (adds.length > 1) details += ` (+${adds.length - 1} more)`;
         }
-      } else if(t.drops){
-        const drops = Object.keys(t.drops);
-        if(drops.length > 0){
+      } else if (t.drops) {
+        const drops = Object.keys(JSON.parse(t.drops || '{}'));
+        if (drops.length > 0) {
           details = `Dropped ${getPlayerName(drops[0])}`;
-          if(drops.length > 1) details += ` (+${drops.length-1} more)`;
+          if (drops.length > 1) details += ` (+${drops.length - 1} more)`;
         }
-      } else if(typeDisplay === 'TRADE'){
+      } else if (typeDisplay === 'TRADE') {
         details = 'Trade executed';
       } else {
         details = 'Waiver claim';
@@ -952,6 +959,7 @@ function filterMatchups(){
   const team = document.getElementById('matchup-team').value;
   loadMatchups(week, team);
 }
+
 function filterTransactions(){
   loadTransactions(document.getElementById('trans-week').value);
 }
