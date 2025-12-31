@@ -342,7 +342,7 @@ table tbody tr td {
 
 .transaction-waiver { background: rgba(0, 212, 255, 0.3); color:#00d4ff; }
 .transaction-trade { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
-.transaction-free_agent { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
+.transaction-free-agent { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
 .transaction-add, .transaction-drop { background: rgba(255,255,255,0.15); color:#fff; }
 
 .playoff-bracket {
@@ -368,6 +368,13 @@ table tbody tr td {
   font-size:1.5rem;
   font-weight:600;
   opacity:0.7;
+}
+
+.playoff-note {
+  margin-top:1rem;
+  opacity:0.5;
+  font-size:1rem;
+  max-width:600px;
 }
 
 #last-updated {
@@ -527,9 +534,11 @@ table tbody tr td {
   <div class="section-title">Playoff Bracket</div>
   <div class="card">
     <div class="playoff-bracket">
-      <div class="playoff-placeholder">🏈</div>
-      <div class="playoff-text">Playoff bracket coming soon!</div>
-      <div style="margin-top:1rem; opacity:0.5; font-size:1rem;">Available during playoff weeks</div>
+      <div class="playoff-placeholder">🏆</div>
+      <div class="playoff-text">2025 Season Complete!</div>
+      <div class="playoff-note">
+        The 2025 fantasy season has concluded. Historical playoff bracket and results will remain available for viewing until June 2026.
+      </div>
     </div>
   </div>
 </div>
@@ -595,8 +604,8 @@ function createTeamLogo(teamName) {
 
 function getPlayerName(playerId) {
   const player = sleeperPlayers[playerId];
-  if (!player) return playerId || 'Unknown Player';
-  return `${player.first_name || ''} ${player.last_name || ''}`.trim() || playerId;
+  if (!player) return 'Unknown Player';
+  return `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player';
 }
 
 function csvToArray(csv){
@@ -753,7 +762,6 @@ function loadHome(){
 
   const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
   const totalTeams = Object.keys(owners).length;
-  const totalWeeks = lastWeek;
 
   const statsGrid = document.getElementById('stats-grid');
   statsGrid.innerHTML = `
@@ -766,7 +774,7 @@ function loadHome(){
       <div class="stat-label">Teams</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">${totalWeeks}</div>
+      <div class="stat-value">${lastWeek}</div>
       <div class="stat-label">Weeks Played</div>
     </div>
   `;
@@ -782,7 +790,7 @@ function loadHome(){
     }
   });
 
-  const leaderboard = Object.values(moneyMap).sort((a,b)=>b.total-a.total || b.wins-a.wins);
+  const leaderboard = Object.values(moneyMap).sort((a,b)=> b.wins - a.wins || b.total - a.total);
   const tbody = document.querySelector('#money-leaderboard tbody'); tbody.innerHTML='';
   
   leaderboard.forEach((l,i)=>{
@@ -892,7 +900,7 @@ function loadTransactions(filterWeek='all'){
   const tbody = document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
   transactions
     .filter(t => filterWeek==='all' || Number(t.week||0) == Number(filterWeek))
-    .sort((a,b) => b.week - a.week || b.timestamp - a.timestamp)
+    .sort((a,b) => b.week - a.week || (b.timestamp || 0) - (a.timestamp || 0))
     .forEach(t=>{
       const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0].trim() : '';
       const ownerId = rosterToOwner[rosterIds] || '';
@@ -900,19 +908,27 @@ function loadTransactions(filterWeek='all'){
       const teamName = getTeamName(owner);
       
       let details = '';
-      const type = (t.type || '').toLowerCase();
-      const badgeClass = `transaction-${type}` || 'transaction-add';
+      let typeDisplay = (t.type || 'ADD').toUpperCase().replace('_', ' ');
+      let typeKey = t.type ? t.type.toLowerCase().replace(' ', '-') : 'add';
+      if(typeKey === 'free_agent') typeKey = 'free-agent';
+      const badgeClass = `transaction-${typeKey}`;
       
-      if(t.adds && Object.keys(t.adds).length > 0){
-        const playerId = Object.keys(t.adds)[0];
-        details = `Added ${getPlayerName(playerId)}`;
-      } else if(t.drops && Object.keys(t.drops).length > 0){
-        const playerId = Object.keys(t.drops)[0];
-        details = `Dropped ${getPlayerName(playerId)}`;
-      } else if(t.traded && type === 'trade'){
-        details = 'Trade';
+      if(t.adds){
+        const adds = Object.keys(t.adds);
+        if(adds.length > 0){
+          details = `Added ${getPlayerName(adds[0])}`;
+          if(adds.length > 1) details += ` (+${adds.length-1} more)`;
+        }
+      } else if(t.drops){
+        const drops = Object.keys(t.drops);
+        if(drops.length > 0){
+          details = `Dropped ${getPlayerName(drops[0])}`;
+          if(drops.length > 1) details += ` (+${drops.length-1} more)`;
+        }
+      } else if(typeDisplay === 'TRADE'){
+        details = 'Trade executed';
       } else {
-        details = t.type || 'Unknown';
+        details = 'Waiver claim';
       }
       
       const tr=document.createElement('tr');
@@ -924,7 +940,7 @@ function loadTransactions(filterWeek='all'){
             <span class="team-name">${teamName}</span>
           </div>
         </td>
-        <td><span class="transaction-badge ${badgeClass}">${(t.type||'ADD').toUpperCase()}</span></td>
+        <td><span class="transaction-badge ${badgeClass}">${typeDisplay}</span></td>
         <td>${details}</td>
       `;
       tbody.appendChild(tr);
