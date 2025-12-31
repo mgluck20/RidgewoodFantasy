@@ -854,7 +854,6 @@ function renderMatchup(matchup, isChamp = false) {
 function loadPlayoffs() {
   const bracket = document.getElementById('playoff-bracket');
 
-  // If no playoff data at all
   if (playoffMatchups.length === 0) {
     bracket.innerHTML = `
       <div class="playoff-message">
@@ -866,24 +865,20 @@ function loadPlayoffs() {
     return;
   }
 
-  // Always show the bracket if there is any playoff data
   let html = '<div class="playoff-container">';
 
-  // Quarterfinals
   html += '<div class="playoff-section"><h2>Quarterfinals (Week 15)</h2><div class="playoff-grid">';
   const qf = getPlayoffPairs(15);
   if (qf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
   qf.forEach(m => html += renderMatchup(m));
   html += '</div></div>';
 
-  // Semifinals
   html += '<div class="playoff-section"><h2>Semifinals (Week 16)</h2><div class="playoff-grid">';
   const sf = getPlayoffPairs(16);
   if (sf.length === 0) html += '<div class="matchup-box"><div style="text-align:center;padding:3rem;opacity:0.6;">No matches yet</div></div>';
   sf.forEach(m => html += renderMatchup(m));
   html += '</div></div>';
 
-  // Championship
   html += '<div class="playoff-section"><h2>Championship (Week 17)</h2><div class="playoff-grid">';
   const champ = getPlayoffPairs(17);
   if (champ.length === 0) {
@@ -896,7 +891,6 @@ function loadPlayoffs() {
   }
   html += '</div></div>';
 
-  // Season ended message only if we have Week 17 data
   if (playoffMatchups.some(m => m.week === 17)) {
     html += '<div style="text-align:center;margin-top:4rem;"><h2 style="font-size:4rem;color:#FFD700;text-shadow:0 0 40px gold;">SEASON ENDED</h2></div>';
   }
