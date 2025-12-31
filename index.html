@@ -293,16 +293,14 @@ table tbody tr td {
 }
 .transaction-badge {
   display:inline-block;
-  padding:0.4rem 0.8rem;
+  padding:0.6rem 1rem;
   border-radius:8px;
-  font-size:0.85rem;
+  font-size:1rem;
   font-weight:600;
   text-transform:uppercase;
 }
 .transaction-trade { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
 .transaction-free_agent, .transaction-waiver { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
-.transaction-add { background: rgba(0, 212, 255, 0.3); color:#00d4ff; }
-.transaction-drop { background: rgba(255, 100, 100, 0.3); color:#ff8888; }
 .playoff-bracket {
   background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
@@ -371,9 +369,6 @@ table tbody tr td {
   table th, table td { padding:0.75rem 0.5rem; }
   .team-logo { width:32px; height:32px; font-size:1rem; }
 }
-.transaction-waiver { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
-.transaction-free_agent { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
-.transaction-trade { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
 </style>
 </head>
 <body>
@@ -461,7 +456,6 @@ table tbody tr td {
   </div>
   <div class="card">
     <div id="transactions-list">
-      <!-- Transactions will be inserted here as cards for better readability -->
       Loading transactions...
     </div>
   </div>
@@ -497,16 +491,17 @@ const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZ
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
 const SLEEPER_TRENDING_URL = 'https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=25';
 
-let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=17;
+let owners = {}, rosters = {}, bonuses = [], matchups = [], transactions = [], lastWeek = 17;
 let rosterToOwner = {};
 let sleeperPlayers = {};
-let debugLog = [];
 
 function addDebug(msg) {
-  debugLog.push(msg);
-  const debugEl = document.getElementById('debug-info');
-  if(debugEl) debugEl.textContent = debugLog.join('\n');
   console.log(msg);
+  const debugEl = document.getElementById('debug-info');
+  if (debugEl) {
+    debugEl.textContent += msg + '\n';
+    debugEl.scrollTop = debugEl.scrollHeight;
+  }
 }
 
 function getPlayerName(playerId) {
@@ -541,25 +536,25 @@ function createTeamLogo(teamName) {
   return `<div class="team-logo" style="background: linear-gradient(135deg, ${color1} 0%, ${color2} 100%);">${initials}</div>`;
 }
 
-function csvToArray(csv){
+function csvToArray(csv) {
   const lines = csv.trim().split('\n');
   if (lines.length < 1) return [];
-  const headers = lines[0].split(',').map(h=>h.trim());
-  return lines.slice(1).map(line=>{
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
     const values = [];
     let current = '';
     let inQuotes = false;
-    for(let i=0; i<line.length; i++){
+    for (let i = 0; i < line.length; i++) {
       const char = line[i];
-      if(char === '"') inQuotes = !inQuotes;
-      else if(char === ',' && !inQuotes){
+      if (char === '"') inQuotes = !inQuotes;
+      else if (char === ',' && !inQuotes) {
         values.push(current.trim());
         current = '';
       } else current += char;
     }
     values.push(current.trim());
-    const obj={};
-    headers.forEach((h,i)=>obj[h]=(values[i]||'').replace(/^"|"$/g,'').trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (values[i] || '').replace(/^"|"$/g, '').trim());
     return obj;
   });
 }
@@ -571,7 +566,7 @@ async function loadSleeperPlayers() {
       sleeperPlayers = await response.json();
       addDebug(`Loaded ${Object.keys(sleeperPlayers).length} Sleeper players`);
     }
-  } catch(error) {
+  } catch (error) {
     addDebug(`Error loading Sleeper players: ${error.message}`);
   }
 }
@@ -600,62 +595,84 @@ async function loadTrendingPlayers() {
     });
     html += '</tbody></table>';
     container.innerHTML = html;
-  } catch(error) {
+  } catch (error) {
     document.getElementById('trending-players').innerHTML = `<p style="text-align:center; opacity:0.7;">Error loading trending players</p>`;
     addDebug(`Error loading trending: ${error.message}`);
   }
 }
 
-async function loadData(){
+async function loadData() {
+  document.getElementById('transactions-list').innerHTML = 'Loading data...';
   try {
     addDebug('Starting data load...');
     await loadSleeperPlayers();
 
     const [ownersCsv, rostersCsv, bonusesCsv, matchupsCsv, transactionsCsv, configCsv] = await Promise.all([
-      fetch(URL_OWNERS).then(r=>r.text()),
-      fetch(URL_ROSTERS).then(r=>r.text()),
-      fetch(URL_WEEKLY_BONUSES).then(r=>r.text()),
-      fetch(URL_WEEKLY_MATCHUPS).then(r=>r.text()),
-      fetch(URL_TRANSACTIONS).then(r=>r.text()),
-      fetch(URL_CONFIG).then(r=>r.text())
+      fetch(URL_OWNERS).then(r => r.text()),
+      fetch(URL_ROSTERS).then(r => r.text()),
+      fetch(URL_WEEKLY_BONUSES).then(r => r.text()),
+      fetch(URL_WEEKLY_MATCHUPS).then(r => r.text()),
+      fetch(URL_TRANSACTIONS).then(r => r.text()),
+      fetch(URL_CONFIG).then(r => r.text())
     ]);
 
     addDebug('All CSVs fetched successfully');
+
+    // Parse owners and rosters
     const ownersArray = csvToArray(ownersCsv);
-    ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'' });
+    ownersArray.forEach(o => owners[o.owner_id] = { display_name: o.display_name || 'Unknown', team_name: o.team_name || '' });
 
     const rostersArray = csvToArray(rostersCsv);
-    rostersArray.forEach(r=>{
-      rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) };
-      if(r.roster_id && r.owner_id) rosterToOwner[r.roster_id] = r.owner_id;
+    rostersArray.forEach(r => {
+      rosters[r.owner_id] = { ...r, wins: Number(r.wins || 0), losses: Number(r.losses || 0), ties: Number(r.ties || 0), points_for: Number(r.points_for || 0) };
+      if (r.roster_id && r.owner_id) rosterToOwner[r.roster_id] = r.owner_id;
     });
 
-    bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0), bonus_type: b.bonus_type || 'HIGH_SCORE'}));
-    matchups = csvToArray(matchupsCsv).map(m=>({...m, week:Number(m.week||0), points:Number(m.points||0)}));
+    bonuses = csvToArray(bonusesCsv).map(b => ({ ...b, week: Number(b.week || 0), amount: Number(b.amount || 0), bonus_type: b.bonus_type || 'HIGH_SCORE' }));
+    matchups = csvToArray(matchupsCsv).map(m => ({ ...m, week: Number(m.week || 0), points: Number(m.points || 0) }));
+
+    // Transactions parsing with robust handling
     transactions = csvToArray(transactionsCsv).map(t => {
-      try {
-        return {
-          ...t,
-          week: Number(t.leg || t.week || 0),
-          roster_ids: t.roster_ids ? t.roster_ids.split(',').map(id => id.trim()) : [],
-          adds: t.adds ? JSON.parse(t.adds.replace(/'/g, '"')) : {},
-          drops: t.drops ? JSON.parse(t.drops.replace(/'/g, '"')) : {},
-          draft_picks: t.draft_picks ? JSON.parse(t.draft_picks.replace(/'/g, '"')) : [],
-          waiver_budget: t.waiver_budget ? JSON.parse(t.waiver_budget.replace(/'/g, '"')) : [],
-          type: t.type || 'unknown',
-          created: Number(t.created || 0)
-        };
-      } catch(e) {
-        addDebug(`Failed to parse transaction: ${e.message}`);
-        return { ...t, week: 0, type: 'error' };
-      }
-    });
+      const parsed = {
+        week: Number(t.leg || t.week || 0),
+        roster_ids: t.roster_ids ? t.roster_ids.split(',').map(id => id.trim()) : [],
+        type: t.type || 'unknown',
+        created: Number(t.created || t.status_updated || 0) || 0,
+        adds: {},
+        drops: {},
+        draft_picks: [],
+        waiver_budget: []
+      };
+
+      // Robust parse for JSON fields (handle empty, null, single quotes)
+      const robustParse = (field) => {
+        let str = t[field] || '';
+        if (!str || str.trim() === '' || str === 'null' || str === '{}') return field === 'draft_picks' || field === 'waiver_budget' ? [] : {};
+        str = str.replace(/'/g, '"').trim();
+        try {
+          return JSON.parse(str);
+        } catch (e) {
+          addDebug(`Parse error in ${field}: ${str}`);
+          return field === 'draft_picks' || field === 'waiver_budget' ? [] : {};
+        }
+      };
+
+      parsed.adds = robustParse('adds');
+      parsed.drops = robustParse('drops');
+      parsed.draft_picks = robustParse('draft_picks');
+      parsed.waiver_budget = robustParse('waiver_budget');
+
+      return parsed;
+    }).filter(t => t.week > 0); // Filter out invalid weeks
+
+    addDebug(`Parsed ${transactions.length} transactions`);
 
     const configRows = csvToArray(configCsv);
-    const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
-    lastWeek = weekRow ? Math.min(Number(weekRow.Value||17), 17) : 17;
+    const weekRow = configRows.find(r => r.Key === 'LastProcessedWeek');
+    lastWeek = weekRow ? Math.min(Number(weekRow.Value || 17), 17) : 17;
 
-    document.getElementById('last-updated').textContent = `Season Complete – Regular season: 17 weeks`;
+    document.getElementById('last-updated').textContent = `Season Complete – Regular season: ${lastWeek} weeks`;
+
     populateWeekFilters();
     populateTeamFilter();
     loadHome();
@@ -664,28 +681,26 @@ async function loadData(){
     loadTransactions();
     loadTrendingPlayers();
 
-    addDebug('✓ Data load complete!');
-  } catch(error) {
+    addDebug('Data load complete!');
+  } catch (error) {
     addDebug(`ERROR: ${error.message}`);
-    console.error('Load error:', error);
-    lastWeek = 17;
-    loadHome();
+    document.getElementById('transactions-list').innerHTML = '<p style="text-align:center; opacity:0.7;">Error loading data. Check console/debug.</p>';
   }
 }
 
-function populateWeekFilters(){
-  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>t.week)])).filter(w => w > 0).sort((a,b)=>a-b);
+function populateWeekFilters() {
+  const weeks = Array.from(new Set([...matchups.map(m => m.week), ...transactions.map(t => t.week)])).filter(w => w > 0).sort((a, b) => a - b);
   const matchupSelect = document.getElementById('matchup-week');
   const transSelect = document.getElementById('trans-week');
-  weeks.forEach(w=>{
-    const opt1=document.createElement('option'); opt1.value=w; opt1.text=`Week ${w}`; matchupSelect.appendChild(opt1);
-    const opt2=document.createElement('option'); opt2.value=w; opt2.text=`Week ${w}`; transSelect.appendChild(opt2);
+  weeks.forEach(w => {
+    const opt1 = document.createElement('option'); opt1.value = w; opt1.text = `Week ${w}`; matchupSelect.appendChild(opt1);
+    const opt2 = document.createElement('option'); opt2.value = w; opt2.text = `Week ${w}`; transSelect.appendChild(opt2);
   });
 }
 
-function populateTeamFilter(){
+function populateTeamFilter() {
   const teamSelect = document.getElementById('matchup-team');
-  Object.values(owners).sort((a,b)=>getTeamName(a).localeCompare(getTeamName(b))).forEach(o=>{
+  Object.values(owners).sort((a, b) => getTeamName(a).localeCompare(getTeamName(b))).forEach(o => {
     const teamName = getTeamName(o);
     const opt = document.createElement('option');
     opt.value = teamName;
@@ -694,17 +709,17 @@ function populateTeamFilter(){
   });
 }
 
-function loadHome(){
-  // ... (unchanged from your original)
-  const latest = bonuses.sort((a,b)=>b.week-a.week)[0];
+function loadHome() {
+  const latest = bonuses.sort((a, b) => b.week - a.week)[0];
   const winnerBox = document.getElementById('winner-box');
-  if(latest && latest.owner_id && owners[latest.owner_id]){
+  if (latest && latest.owner_id && owners[latest.owner_id]) {
     const owner = owners[latest.owner_id];
     const teamName = getTeamName(owner);
     winnerBox.innerHTML = `${createTeamLogo(teamName)} <span style="vertical-align:middle;">${owner.display_name} (${teamName}) won <strong>$${latest.amount}</strong> in Week ${latest.week}!</span>`;
   } else {
-    winnerBox.textContent='No weekly winners recorded';
+    winnerBox.textContent = 'No weekly winners recorded';
   }
+
   const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
   const totalTeams = Object.keys(owners).length;
   const statsGrid = document.getElementById('stats-grid');
@@ -722,34 +737,26 @@ function loadHome(){
       <div class="stat-label">Weeks Played</div>
     </div>
   `;
+
+  // Money leaderboard (unchanged)
   const moneyMap = {};
-  Object.keys(owners).forEach(ownerId => {
-    moneyMap[ownerId] = { total:0, wins:0, owner: owners[ownerId] };
-  });
-  bonuses.forEach(b=>{
-    const mapEntry = moneyMap[b.owner_id];
-    if(mapEntry){
-      mapEntry.total += b.amount;
-      if(b.bonus_type === 'HIGH_SCORE' || b.bonus_type.includes('HIGH')) mapEntry.wins += 1;
+  Object.keys(owners).forEach(ownerId => moneyMap[ownerId] = { total: 0, wins: 0, owner: owners[ownerId] });
+  bonuses.forEach(b => {
+    if (moneyMap[b.owner_id]) {
+      moneyMap[b.owner_id].total += b.amount;
+      if (b.bonus_type.includes('HIGH')) moneyMap[b.owner_id].wins += 1;
     }
   });
-  const leaderboard = Object.values(moneyMap).sort((a,b)=> b.wins - a.wins || b.total - a.total);
-  const tbody = document.querySelector('#money-leaderboard tbody'); tbody.innerHTML='';
-  leaderboard.forEach((l,i)=>{
+  const leaderboard = Object.values(moneyMap).sort((a, b) => b.wins - a.wins || b.total - a.total);
+  const tbody = document.querySelector('#money-leaderboard tbody');
+  tbody.innerHTML = '';
+  leaderboard.forEach((l, i) => {
     const teamName = getTeamName(l.owner);
-    const tr=document.createElement('tr');
-    const rankClass = i < 3 ? `rank-${i+1}` : '';
-    tr.innerHTML=`
-      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
-      <td>
-        <div class="team-cell">
-          ${createTeamLogo(teamName)}
-          <div class="team-info">
-            <span class="team-name">${teamName}</span>
-            <span class="owner-name">${l.owner.display_name}</span>
-          </div>
-        </div>
-      </td>
+    const tr = document.createElement('tr');
+    const rankClass = i < 3 ? `rank-${i + 1}` : '';
+    tr.innerHTML = `
+      <td><span class="rank-badge ${rankClass}">${i + 1}</span></td>
+      <td><div class="team-cell">${createTeamLogo(teamName)}<div class="team-info"><span class="team-name">${teamName}</span><span class="owner-name">${l.owner.display_name}</span></div></div></td>
       <td>${l.wins}</td>
       <td style="font-weight:700; font-size:1.1rem;">$${l.total}</td>
     `;
@@ -757,26 +764,18 @@ function loadHome(){
   });
 }
 
-function loadStandings(){
-  // ... (unchanged)
-  const data = Object.values(rosters).sort((a,b)=> (b.wins - a.wins) || (b.points_for - a.points_for));
-  const tbody = document.querySelector('#standings-table tbody'); tbody.innerHTML='';
-  data.forEach((r,i)=>{
-    const o = owners[r.owner_id] || { display_name:'Unknown', team_name:'' };
+function loadStandings() {
+  const data = Object.values(rosters).sort((a, b) => (b.wins - a.wins) || (b.points_for - a.points_for));
+  const tbody = document.querySelector('#standings-table tbody');
+  tbody.innerHTML = '';
+  data.forEach((r, i) => {
+    const o = owners[r.owner_id] || { display_name: 'Unknown', team_name: '' };
     const teamName = getTeamName(o);
-    const tr=document.createElement('tr');
-    const rankClass = i < 3 ? `rank-${i+1}` : '';
-    tr.innerHTML=`
-      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
-      <td>
-        <div class="team-cell">
-          ${createTeamLogo(teamName)}
-          <div class="team-info">
-            <span class="team-name">${teamName}</span>
-            <span class="owner-name">${o.display_name}</span>
-          </div>
-        </div>
-      </td>
+    const tr = document.createElement('tr');
+    const rankClass = i < 3 ? `rank-${i + 1}` : '';
+    tr.innerHTML = `
+      <td><span class="rank-badge ${rankClass}">${i + 1}</span></td>
+      <td><div class="team-cell">${createTeamLogo(teamName)}<div class="team-info"><span class="team-name">${teamName}</span><span class="owner-name">${o.display_name}</span></div></div></td>
       <td style="font-weight:600;">${r.wins}-${r.losses}${r.ties > 0 ? '-' + r.ties : ''}</td>
       <td style="font-weight:700;">${r.points_for.toFixed(2)}</td>
     `;
@@ -784,44 +783,34 @@ function loadStandings(){
   });
 }
 
-function loadMatchups(selectedWeek='all', selectedTeam='all'){
-  // ... (unchanged)
-  const tbody = document.querySelector('#matchups-table tbody'); tbody.innerHTML='';
+function loadMatchups(selectedWeek = 'all', selectedTeam = 'all') {
+  const tbody = document.querySelector('#matchups-table tbody');
+  tbody.innerHTML = '';
   const matchupPairs = {};
-  matchups.forEach(m=>{
+  matchups.forEach(m => {
     const key = `${m.week}-${m.matchup_id}`;
-    if(!matchupPairs[key]) matchupPairs[key] = [];
+    if (!matchupPairs[key]) matchupPairs[key] = [];
     matchupPairs[key].push(m);
   });
-  Object.values(matchupPairs).forEach(pair=>{
-    if(pair.length !== 2) return;
+  Object.values(matchupPairs).forEach(pair => {
+    if (pair.length !== 2) return;
     const week = pair[0].week;
-    if(selectedWeek !== 'all' && week != Number(selectedWeek)) return;
+    if (selectedWeek !== 'all' && week != Number(selectedWeek)) return;
     const team1_owner_id = rosterToOwner[pair[0].roster_id];
     const team2_owner_id = rosterToOwner[pair[1].roster_id];
-    const team1 = owners[team1_owner_id] || { display_name:'Unknown', team_name:'' };
-    const team2 = owners[team2_owner_id] || { display_name:'Unknown', team_name:'' };
+    const team1 = owners[team1_owner_id] || { display_name: 'Unknown', team_name: '' };
+    const team2 = owners[team2_owner_id] || { display_name: 'Unknown', team_name: '' };
     const team1Name = getTeamName(team1);
     const team2Name = getTeamName(team2);
-    if(selectedTeam !== 'all' && team1Name !== selectedTeam && team2Name !== selectedTeam) return;
+    if (selectedTeam !== 'all' && team1Name !== selectedTeam && team2Name !== selectedTeam) return;
     const score1 = pair[0].points;
     const score2 = pair[1].points;
     const winner = score1 > score2 ? 0 : (score2 > score1 ? 1 : -1);
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td style="font-weight:700;">Week ${week}</td>
-      <td>
-        <div class="team-cell">
-          ${createTeamLogo(team1Name)}
-          <span class="team-name" style="opacity:${winner === 0 ? 1 : 0.6};">${team1Name}</span>
-        </div>
-      </td>
-      <td>
-        <div class="team-cell">
-          ${createTeamLogo(team2Name)}
-          <span class="team-name" style="opacity:${winner === 1 ? 1 : 0.6};">${team2Name}</span>
-        </div>
-      </td>
+      <td><div class="team-cell">${createTeamLogo(team1Name)}<span class="team-name" style="opacity:${winner === 0 ? 1 : 0.6};">${team1Name}</span></div></td>
+      <td><div class="team-cell">${createTeamLogo(team2Name)}<span class="team-name" style="opacity:${winner === 1 ? 1 : 0.6};">${team2Name}</span></div></td>
       <td>
         <span class="score-display" style="color:${winner === 0 ? '#00ffbb' : 'rgba(255,255,255,0.6)'};">${score1.toFixed(2)}</span>
         <span style="margin:0 0.5rem;">-</span>
@@ -832,185 +821,139 @@ function loadMatchups(selectedWeek='all', selectedTeam='all'){
   });
 }
 
-// === FIXED loadTransactions ===
 function loadTransactions(filterWeek = 'all') {
   const container = document.getElementById('transactions-list');
-  container.innerHTML = '';
+  container.innerHTML = '<p style="text-align:center; opacity:0.7;">Loading transactions...</p>';
 
   const filtered = transactions
     .filter(t => filterWeek === 'all' || t.week == Number(filterWeek))
-    .sort((a, b) => b.created - a.created || b.week - a.week); // Prioritize timestamp if available
+    .sort((a, b) => b.created - a.created || b.week - a.week);
 
   if (filtered.length === 0) {
-    container.innerHTML = '<p style="text-align:center; opacity:0.7; padding:2rem;">No transactions found for selected week.</p>';
+    container.innerHTML = '<p style="text-align:center; opacity:0.7; padding:2rem;">No transactions found for the selected week.</p>';
     return;
   }
+
+  container.innerHTML = ''; // Clear loading
 
   let currentWeek = null;
   let weekContainer = null;
 
   filtered.forEach(t => {
-    // Safe JSON parsing with single-quote support
-    const safeParse = (str) => {
-      if (!str || str === '{}' || str === '[]' || str.trim() === '') return {};
-      if (Array.isArray(str)) return str;
-      try {
-        return JSON.parse(str.replace(/'/g, '"'));
-      } catch (e) {
-        addDebug(`Parse error for ${str}: ${e.message}`);
-        return {};
-      }
-    };
+    const type = t.type.toLowerCase();
+    let typeDisplay = type === 'free_agent' ? 'FREE AGENT' : type === 'waiver' ? 'WAIVER' : type.toUpperCase();
+    let badgeClass = type === 'trade' ? 'transaction-trade' : 'transaction-free_agent';
 
-    const adds = safeParse(t.adds);
-    const drops = safeParse(t.drops);
-    const picks = safeParse(t.draft_picks);
-    const faab = safeParse(t.waiver_budget);
-
-    const type = (t.type || 'unknown').toLowerCase();
-    let typeDisplay = type === 'free_agent' ? 'FREE AGENT' : 
-                      type === 'waiver' ? 'WAIVER' : 
-                      type.toUpperCase().replace('_', ' ');
-
-    let badgeClass = `transaction-${type}`;
-    if (type === 'free_agent' || type === 'waiver') badgeClass = 'transaction-free_agent';
-
-    // Timestamp
     let dateStr = '';
-    if (t.created && t.created > 0) {
-      const date = new Date(t.created * 1000); // Sleeper uses seconds
-      dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (t.created > 0) {
+      const date = new Date(t.created * 1000);
+      dateStr = `<div style="font-size:0.85rem; opacity:0.7; margin-top:0.5rem;">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>`;
     }
 
-    // Teams involved
-    const rosterIds = t.roster_ids || [];
-    let teamDisplays = rosterIds.map(rid => {
-      const ownerId = rosterToOwner[rid];
+    // Teams
+    let teamsHtml = t.roster_ids.map(rid => {
+      const ownerId = rosterToOwner[rid] || '';
       const owner = owners[ownerId] || { display_name: 'Unknown' };
       const teamName = getTeamName(owner);
-      return `<div class="team-cell" style="display:inline-flex; margin:0 0.5rem;">
-        ${createTeamLogo(teamName)}
-        <span class="team-name">${teamName}</span>
-      </div>`;
-    });
+      return `<div class="team-cell" style="display:inline-flex; align-items:center; gap:0.75rem;">${createTeamLogo(teamName)}<span class="team-name">${teamName}</span></div>`;
+    }).join(type === 'trade' ? '<span style="font-size:1.8rem; opacity:0.6; margin:0 1rem;">↔</span>' : '<span style="margin:0 0.5rem;">•</span>');
 
-    let teamsHtml = teamDisplays.join(type === 'trade' ? '<span style="font-size:1.5rem; opacity:0.6;">↔</span>' : ' • ');
+    if (teamsHtml === '') teamsHtml = 'Unknown Team';
 
-    // Details construction
-    let detailsHtml = [];
+    // Details
+    let details = [];
 
-    // Adds
-    if (Object.keys(adds).length > 0) {
-      Object.keys(adds).forEach(pid => {
-        detailsHtml.push(`<span style="color:#00ffbb; font-weight:700;">+ ${getPlayerName(pid)}</span>`);
+    if (Object.keys(t.adds).length > 0) {
+      Object.keys(t.adds).forEach(pid => details.push(`<span style="color:#00ffbb; font-weight:700;">+ ${getPlayerName(pid)}</span>`));
+    }
+    if (Object.keys(t.drops).length > 0) {
+      Object.keys(t.drops).forEach(pid => details.push(`<span style="color:#ff6b6b; font-weight:700;">– ${getPlayerName(pid)}</span>`));
+    }
+    if (t.draft_picks.length > 0) {
+      t.draft_picks.forEach(pick => {
+        const from = getTeamName(owners[rosterToOwner[pick.previous_owner_id || pick.roster_id] || {}]);
+        const to = getTeamName(owners[rosterToOwner[pick.owner_id] || {}]);
+        details.push(`<strong>${from} → ${to}</strong>: ${pick.season} Round ${pick.round}`);
+      });
+    }
+    if (t.waiver_budget.length > 0) {
+      t.waiver_budget.forEach(b => {
+        const sender = getTeamName(owners[rosterToOwner[b.sender] || {}]);
+        const receiver = getTeamName(owners[rosterToOwner[b.receiver] || {}]);
+        details.push(`<strong>${sender}</strong> sends $${b.amount} FAAB → <strong>${receiver}</strong>`);
       });
     }
 
-    // Drops
-    if (Object.keys(drops).length > 0) {
-      Object.keys(drops).forEach(pid => {
-        detailsHtml.push(`<span style="color:#ff6b6b; font-weight:700;">– ${getPlayerName(pid)}</span>`);
-      });
-    }
-
-    // Draft picks
-    if (picks.length > 0) {
-      picks.forEach(pick => {
-        const fromId = pick.previous_owner_id || pick.roster_id;
-        const toId = pick.owner_id;
-        const fromTeam = getTeamName(owners[rosterToOwner[fromId]] || {});
-        const toTeam = getTeamName(owners[rosterToOwner[toId]] || {});
-        detailsHtml.push(`<strong>${fromTeam} → ${toTeam}</strong>: ${pick.season} Rd ${pick.round} pick`);
-      });
-    }
-
-    // FAAB
-    if (faab.length > 0) {
-      faab.forEach(b => {
-        const sender = getTeamName(owners[rosterToOwner[b.sender]] || {});
-        const receiver = getTeamName(owners[rosterToOwner[b.receiver]] || {});
-        detailsHtml.push(`<strong>${sender}</strong> sends $${b.amount} FAAB → <strong>${receiver}</strong>`);
-      });
-    }
-
-    if (detailsHtml.length === 0) {
-      detailsHtml.push('<span style="opacity:0.6;">No player or asset movement</span>');
-    }
+    if (details.length === 0) details = ['<span style="opacity:0.6;">No movement recorded</span>'];
 
     // Week header
     if (t.week !== currentWeek) {
       currentWeek = t.week;
       weekContainer = document.createElement('div');
-      weekContainer.style.marginBottom = '2rem';
-      weekContainer.innerHTML = `<h3 style="font-size:1.4rem; margin-bottom:1rem; color:#00d4ff;">Week ${currentWeek}</h3>`;
+      weekContainer.innerHTML = `<h3 style="font-size:1.5rem; margin:2rem 0 1rem; color:#00d4ff; border-bottom:2px solid #00d4ff; padding-bottom:0.5rem;">Week ${currentWeek}</h3>`;
       container.appendChild(weekContainer);
     }
 
-    // Transaction card
+    // Card
     const card = document.createElement('div');
-    card.style = 'background:rgba(255,255,255,0.08); border-radius:16px; padding:1.5rem; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.15);';
+    card.style = 'background:rgba(255,255,255,0.08); backdrop-filter:blur(20px); border-radius:16px; padding:1.5rem; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.15);';
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-          ${teamsHtml}
-        </div>
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:1rem;">${teamsHtml}</div>
         <div style="text-align:right;">
-          <span class="transaction-badge ${badgeClass}" style="font-size:1rem; padding:0.6rem 1rem;">${typeDisplay}</span>
-          ${dateStr ? `<div style="font-size:0.85rem; opacity:0.7; margin-top:0.5rem;">${dateStr}</div>` : ''}
+          <span class="transaction-badge ${badgeClass}">${typeDisplay}</span>
+          ${dateStr}
         </div>
       </div>
-      <div style="margin-top:1rem; line-height:1.8;">${detailsHtml.join('<br>')}</div>
+      <div style="margin-top:1.2rem; line-height:1.8; font-size:1.05rem;">${details.join('<br>')}</div>
     `;
     weekContainer.appendChild(card);
   });
 }
 
-function filterMatchups(){
+function filterMatchups() {
   const week = document.getElementById('matchup-week').value;
   const team = document.getElementById('matchup-team').value;
   loadMatchups(week, team);
 }
 
-function filterTransactions(){
+function filterTransactions() {
   loadTransactions(document.getElementById('trans-week').value);
 }
 
-function showPage(page){
-  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
-  document.getElementById(page).style.display='block';
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById(page).style.display = 'block';
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.querySelector(`nav button[onclick="showPage('${page}')"]`).classList.add('active');
 }
 
-function sortTable(tableId, col){
-  // ... (your existing sort function)
+function sortTable(tableId, col) {
   const table = document.getElementById(tableId);
   let switching = true;
   let dir = 'asc';
-  while(switching){
+  while (switching) {
     switching = false;
     const rows = table.rows;
-    for(let i=1; i<rows.length-1; i++){
+    for (let i = 1; i < rows.length - 1; i++) {
       let shouldSwitch = false;
-      let x = rows[i].getElementsByTagName("TD")[col];
-      let y = rows[i+1].getElementsByTagName("TD")[col];
-      let xVal = x.textContent.trim();
-      let yVal = y.textContent.trim();
-      if(!isNaN(xVal) && !isNaN(yVal)){
-        xVal = Number(xVal);
-        yVal = Number(yVal);
+      let x = rows[i].cells[col].textContent.trim();
+      let y = rows[i + 1].cells[col].textContent.trim();
+      if (!isNaN(x) && !isNaN(y)) {
+        x = Number(x);
+        y = Number(y);
       }
-      if((dir==='asc' && xVal > yVal) || (dir==='desc' && xVal < yVal)){
+      if ((dir === 'asc' && x > y) || (dir === 'desc' && x < y)) {
         shouldSwitch = true;
         break;
       }
     }
-    if(shouldSwitch){
-      rows[i].parentNode.insertBefore(rows[i+1], rows[i]);
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
       switching = true;
-    } else if(dir==='asc'){
-      dir='desc';
-      switching=true;
+    } else if (dir === 'asc') {
+      dir = 'desc';
+      switching = true;
     }
   }
 }
@@ -1019,4 +962,3 @@ window.onload = loadData;
 </script>
 </body>
 </html>
-
