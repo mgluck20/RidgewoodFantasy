@@ -371,6 +371,9 @@ table tbody tr td {
   table th, table td { padding:0.75rem 0.5rem; }
   .team-logo { width:32px; height:32px; font-size:1rem; }
 }
+.transaction-waiver { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
+.transaction-free_agent { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
+.transaction-trade { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
 </style>
 </head>
 <body>
@@ -457,17 +460,10 @@ table tbody tr td {
     </select>
   </div>
   <div class="card">
-    <table id="transactions-table">
-      <thead>
-        <tr>
-          <th>Week</th>
-          <th>Team(s)</th>
-          <th>Type</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div id="transactions-list">
+      <!-- Transactions will be inserted here as cards for better readability -->
+      Loading transactions...
+    </div>
   </div>
 </div>
 <div id="playoffs" class="page" style="display:none">
@@ -837,84 +833,135 @@ function loadMatchups(selectedWeek='all', selectedTeam='all'){
 }
 
 // === FIXED loadTransactions ===
-function loadTransactions(filterWeek='all'){
-  const tbody = document.querySelector('#transactions-table tbody');
-  tbody.innerHTML = '';
+function loadTransactions(filterWeek = 'all') {
+  const container = document.getElementById('transactions-list');
+  container.innerHTML = '';
 
   const filtered = transactions
     .filter(t => filterWeek === 'all' || t.week == Number(filterWeek))
-    .sort((a, b) => b.created - a.created || b.week - a.week);
+    .sort((a, b) => b.created - a.created || b.week - a.week); // Prioritize timestamp if available
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="text-align:center; opacity:0.7; padding:2rem;">No transactions found for selected week.</p>';
+    return;
+  }
+
+  let currentWeek = null;
+  let weekContainer = null;
 
   filtered.forEach(t => {
-    const type = t.type.toLowerCase();
-    let typeDisplay = type === 'free_agent' ? 'FREE AGENT' : type.toUpperCase().replace('_', ' ');
-    let badgeClass = `transaction-${type}`;
+    // Safe JSON parsing with single-quote support
+    const safeParse = (str) => {
+      if (!str || str === '{}' || str === '[]' || str.trim() === '') return {};
+      if (Array.isArray(str)) return str;
+      try {
+        return JSON.parse(str.replace(/'/g, '"'));
+      } catch (e) {
+        addDebug(`Parse error for ${str}: ${e.message}`);
+        return {};
+      }
+    };
 
-    // Handle team display (multiple for trades)
-    let teamCells = '';
-    if (t.roster_ids.length > 1) {
-      teamCells = t.roster_ids.map(rid => {
-        const ownerId = rosterToOwner[rid];
-        const owner = owners[ownerId] || { display_name: 'Unknown' };
-        const teamName = getTeamName(owner);
-        return `<div class="team-cell">${createTeamLogo(teamName)}<span class="team-name">${teamName}</span></div>`;
-      }).join(' <span style="margin:0 0.5rem;">↔</span> ');
-    } else if (t.roster_ids.length === 1) {
-      const ownerId = rosterToOwner[t.roster_ids[0]];
-      const owner = owners[ownerId] || { display_name: 'Unknown' };
-      const teamName = getTeamName(owner);
-      teamCells = `<div class="team-cell">${createTeamLogo(teamName)}<span class="team-name">${teamName}</span></div>`;
-    } else {
-      teamCells = 'Unknown Team';
+    const adds = safeParse(t.adds);
+    const drops = safeParse(t.drops);
+    const picks = safeParse(t.draft_picks);
+    const faab = safeParse(t.waiver_budget);
+
+    const type = (t.type || 'unknown').toLowerCase();
+    let typeDisplay = type === 'free_agent' ? 'FREE AGENT' : 
+                      type === 'waiver' ? 'WAIVER' : 
+                      type.toUpperCase().replace('_', ' ');
+
+    let badgeClass = `transaction-${type}`;
+    if (type === 'free_agent' || type === 'waiver') badgeClass = 'transaction-free_agent';
+
+    // Timestamp
+    let dateStr = '';
+    if (t.created && t.created > 0) {
+      const date = new Date(t.created * 1000); // Sleeper uses seconds
+      dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    // Build details
-    let details = [];
+    // Teams involved
+    const rosterIds = t.roster_ids || [];
+    let teamDisplays = rosterIds.map(rid => {
+      const ownerId = rosterToOwner[rid];
+      const owner = owners[ownerId] || { display_name: 'Unknown' };
+      const teamName = getTeamName(owner);
+      return `<div class="team-cell" style="display:inline-flex; margin:0 0.5rem;">
+        ${createTeamLogo(teamName)}
+        <span class="team-name">${teamName}</span>
+      </div>`;
+    });
+
+    let teamsHtml = teamDisplays.join(type === 'trade' ? '<span style="font-size:1.5rem; opacity:0.6;">↔</span>' : ' • ');
+
+    // Details construction
+    let detailsHtml = [];
 
     // Adds
-    if (t.adds && Object.keys(t.adds).length > 0) {
-      Object.keys(t.adds).forEach(pid => {
-        details.push(`<span style="color:#00d4ff;">+ ${getPlayerName(pid)}</span>`);
+    if (Object.keys(adds).length > 0) {
+      Object.keys(adds).forEach(pid => {
+        detailsHtml.push(`<span style="color:#00ffbb; font-weight:700;">+ ${getPlayerName(pid)}</span>`);
       });
     }
 
     // Drops
-    if (t.drops && Object.keys(t.drops).length > 0) {
-      Object.keys(t.drops).forEach(pid => {
-        details.push(`<span style="color:#ff8888;">- ${getPlayerName(pid)}</span>`);
+    if (Object.keys(drops).length > 0) {
+      Object.keys(drops).forEach(pid => {
+        detailsHtml.push(`<span style="color:#ff6b6b; font-weight:700;">– ${getPlayerName(pid)}</span>`);
       });
     }
 
     // Draft picks
-    if (t.draft_picks && t.draft_picks.length > 0) {
-      t.draft_picks.forEach(pick => {
-        const fromOwnerId = rosterToOwner[pick.previous_owner_id] || rosterToOwner[pick.roster_id];
-        const toOwnerId = rosterToOwner[pick.owner_id];
-        const fromTeam = getTeamName(owners[fromOwnerId] || {});
-        const toTeam = getTeamName(owners[toOwnerId] || {});
-        details.push(`${fromTeam} → ${toTeam}: ${pick.season} Round ${pick.round} pick`);
+    if (picks.length > 0) {
+      picks.forEach(pick => {
+        const fromId = pick.previous_owner_id || pick.roster_id;
+        const toId = pick.owner_id;
+        const fromTeam = getTeamName(owners[rosterToOwner[fromId]] || {});
+        const toTeam = getTeamName(owners[rosterToOwner[toId]] || {});
+        detailsHtml.push(`<strong>${fromTeam} → ${toTeam}</strong>: ${pick.season} Rd ${pick.round} pick`);
       });
     }
 
-    // FAAB in trade
-    if (t.waiver_budget && t.waiver_budget.length > 0) {
-      t.waiver_budget.forEach(b => {
-        const senderTeam = getTeamName(owners[rosterToOwner[b.sender]] || {});
-        const receiverTeam = getTeamName(owners[rosterToOwner[b.receiver]] || {});
-        details.push(`${senderTeam} sends $${b.amount} FAAB → ${receiverTeam}`);
+    // FAAB
+    if (faab.length > 0) {
+      faab.forEach(b => {
+        const sender = getTeamName(owners[rosterToOwner[b.sender]] || {});
+        const receiver = getTeamName(owners[rosterToOwner[b.receiver]] || {});
+        detailsHtml.push(`<strong>${sender}</strong> sends $${b.amount} FAAB → <strong>${receiver}</strong>`);
       });
     }
 
-    if (details.length === 0) details.push('No player movement');
+    if (detailsHtml.length === 0) {
+      detailsHtml.push('<span style="opacity:0.6;">No player or asset movement</span>');
+    }
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="font-weight:700;">Week ${t.week || '?'}</td>
-      <td>${teamCells}</td>
-      <td><span class="transaction-badge ${badgeClass}">${typeDisplay}</span></td>
-      <td>${details.join('<br>')}</td>
+    // Week header
+    if (t.week !== currentWeek) {
+      currentWeek = t.week;
+      weekContainer = document.createElement('div');
+      weekContainer.style.marginBottom = '2rem';
+      weekContainer.innerHTML = `<h3 style="font-size:1.4rem; margin-bottom:1rem; color:#00d4ff;">Week ${currentWeek}</h3>`;
+      container.appendChild(weekContainer);
+    }
+
+    // Transaction card
+    const card = document.createElement('div');
+    card.style = 'background:rgba(255,255,255,0.08); border-radius:16px; padding:1.5rem; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.15);';
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          ${teamsHtml}
+        </div>
+        <div style="text-align:right;">
+          <span class="transaction-badge ${badgeClass}" style="font-size:1rem; padding:0.6rem 1rem;">${typeDisplay}</span>
+          ${dateStr ? `<div style="font-size:0.85rem; opacity:0.7; margin-top:0.5rem;">${dateStr}</div>` : ''}
+        </div>
+      </div>
+      <div style="margin-top:1rem; line-height:1.8;">${detailsHtml.join('<br>')}</div>
     `;
-    tbody.appendChild(tr);
+    weekContainer.appendChild(card);
   });
 }
 
@@ -972,3 +1019,4 @@ window.onload = loadData;
 </script>
 </body>
 </html>
+
