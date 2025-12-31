@@ -537,8 +537,7 @@ table tbody tr td {
       <div class="playoff-placeholder">🏆</div>
       <div class="playoff-text">2025 Season Complete!</div>
       <div class="playoff-note">
-        The 2025 fantasy season has concluded. Full playoff bracket and results are available in the Sleeper app.<br>
-        This page will remain as a historical reference until June 2026.
+        The 2025 fantasy season has concluded. Full playoff bracket and results are available in the Sleeper app.
       </div>
     </div>
   </div>
@@ -565,7 +564,7 @@ const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZ
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
 const SLEEPER_TRENDING_URL = 'https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=25';
 
-let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=0;
+let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=17; // Default to 17 since season is over
 let rosterToOwner = {};
 let sleeperPlayers = {};
 let debugLog = [];
@@ -601,12 +600,6 @@ function createTeamLogo(teamName) {
   const initials = getTeamInitials(teamName);
   const [color1, color2] = getTeamColor(teamName);
   return `<div class="team-logo" style="background: linear-gradient(135deg, ${color1} 0%, ${color2} 100%);">${initials}</div>`;
-}
-
-function getPlayerName(playerId) {
-  const player = sleeperPlayers[playerId];
-  if (!player) return 'Unknown Player';
-  return `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player';
 }
 
 function csvToArray(csv){
@@ -714,11 +707,13 @@ async function loadData(){
     
     transactions = csvToArray(transactionsCsv);
 
+    // Try to get lastWeek from config, fall back to 17 (regular season length)
     const configRows = csvToArray(configCsv);
     const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
-    lastWeek = weekRow ? Number(weekRow.Value||0) : 0;
-    addDebug(`LastProcessedWeek: ${lastWeek}`);
-    document.getElementById('last-updated').textContent = lastWeek > 0 ? `Last Updated: Week ${lastWeek}` : 'Data loading complete';
+    lastWeek = weekRow ? Math.min(Number(weekRow.Value||17), 17) : 17;
+
+    addDebug(`Weeks Played set to: ${lastWeek}`);
+    document.getElementById('last-updated').textContent = `Season Complete – Regular season: 17 weeks`;
 
     populateWeekFilters();
     populateTeamFilter();
@@ -732,6 +727,9 @@ async function loadData(){
   } catch(error) {
     addDebug(`ERROR: ${error.message}`);
     console.error('Load error:', error);
+    // Fallback if anything fails
+    lastWeek = 17;
+    loadHome();
   }
 }
 
@@ -764,12 +762,11 @@ function loadHome(){
     const teamName = getTeamName(owner);
     winnerBox.innerHTML = `${createTeamLogo(teamName)} <span style="vertical-align:middle;">${owner.display_name} (${teamName}) won <strong>$${latest.amount}</strong> in Week ${latest.week}!</span>`;
   } else {
-    winnerBox.textContent='No winners yet';
+    winnerBox.textContent='No weekly winners recorded';
   }
 
   const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
   const totalTeams = Object.keys(owners).length;
-  const weeksPlayed = Math.min(lastWeek || 0, 17);
 
   const statsGrid = document.getElementById('stats-grid');
   statsGrid.innerHTML = `
@@ -782,7 +779,7 @@ function loadHome(){
       <div class="stat-label">Teams</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">${weeksPlayed}</div>
+      <div class="stat-value">${lastWeek}</div>
       <div class="stat-label">Weeks Played</div>
     </div>
   `;
@@ -918,10 +915,16 @@ function loadTransactions(filterWeek='all'){
       
       let details = 'No details available';
       let typeDisplay = (t.type || 'UNKNOWN').toUpperCase().replace('_', ' ');
-      let typeKey = (t.type || 'add').toLowerCase().replace(' ', '-');
-      if(typeKey === 'free_agent') typeDisplay = 'FREE AGENT';
+      let typeKey = (t.type || 'unknown').toLowerCase();
+
+      // Fix Free Agent formatting
+      if (typeKey === 'free_agent' || typeKey === 'free agent') {
+        typeDisplay = 'FREE AGENT';
+        typeKey = 'free-agent';
+      }
+
       const badgeClass = `transaction-${typeKey}`;
-      
+
       const tr=document.createElement('tr');
       tr.innerHTML=`
         <td style="font-weight:700;">Week ${t.week||'?'}</td>
