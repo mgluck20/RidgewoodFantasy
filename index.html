@@ -4,34 +4,378 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ridgewood Fantasy 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-body { font-family:'Roboto',sans-serif; margin:0; background:#f4f6f8; color:#333; }
-header { background:#1e3a8a; color:white; padding:1rem; text-align:center; }
-nav { display:flex; justify-content:center; gap:2rem; background:#3b82f6; padding:0.5rem 0; flex-wrap:wrap; }
-nav button { background:none; border:none; color:white; font-weight:bold; cursor:pointer; font-size:1rem; transition:0.2s; }
-nav button:hover { opacity:0.8; }
-nav button.active { border-bottom:2px solid white; }
-main { padding:2rem; max-width:1200px; margin:auto; }
-table { width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.95rem; }
-table th, table td { padding:0.5rem; border-bottom:1px solid #ccc; text-align:left; }
-table th { background:#1e40af; color:white; cursor:pointer; user-select:none; }
-tr:nth-child(even) { background:#f0f4ff; }
-tr:hover { background:#e0e7ff; }
-.section-title { font-size:1.5rem; margin-bottom:0.5rem; color:#1e3a8a; }
-#winner-box { background:#facc15; padding:1rem; border-radius:8px; margin-bottom:1rem; font-weight:bold; font-size:1.2rem; transition:0.3s; }
-#winner-box span { font-weight:normal; font-size:0.9rem; color:#333; }
-.filter-container { margin-bottom:1rem; display:flex; gap:1rem; flex-wrap:wrap; }
-.filter-container label { font-weight:bold; }
-.filter-container select { padding:0.3rem; }
-.summary-box { background:#e0f2fe; padding:0.8rem; border-radius:6px; margin:0.5rem 0; font-weight:bold; display:inline-block; }
-#debug-info { margin-top:2rem; padding:1rem; background:#fff3cd; border:1px solid #ffc107; border-radius:4px; font-family:monospace; font-size:0.85rem; white-space:pre-wrap; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { 
+  font-family:'Inter',sans-serif; 
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color:#fff; 
+  min-height:100vh;
+}
+
+header { 
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  padding:2rem 1rem; 
+  text-align:center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+header h1 { 
+  font-size:2.5rem; 
+  font-weight:800; 
+  letter-spacing:-1px;
+  background: linear-gradient(to right, #ffd89b, #19547b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+nav { 
+  display:flex; 
+  justify-content:center; 
+  gap:0.5rem; 
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+  padding:1rem; 
+  flex-wrap:wrap;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+nav button { 
+  background: rgba(255,255,255,0.1);
+  border:none; 
+  color:white; 
+  font-weight:600; 
+  cursor:pointer; 
+  font-size:0.95rem; 
+  padding:0.75rem 1.5rem;
+  border-radius:12px;
+  transition: all 0.3s ease;
+  position:relative;
+  overflow:hidden;
+}
+
+nav button::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+  opacity:0;
+  transition: opacity 0.3s ease;
+}
+
+nav button:hover::before { opacity:1; }
+nav button:hover { 
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+nav button.active { 
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+}
+
+main { 
+  padding:2rem; 
+  max-width:1400px; 
+  margin:auto;
+}
+
+.section-title { 
+  font-size:1.8rem; 
+  margin-bottom:1.5rem; 
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.section-title::before {
+  content:'';
+  width:4px;
+  height:30px;
+  background: linear-gradient(to bottom, #ffd89b, #19547b);
+  border-radius:2px;
+}
+
+.card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  border-radius:20px;
+  padding:2rem;
+  margin-bottom:2rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+#winner-box { 
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  padding:2rem; 
+  border-radius:20px; 
+  margin-bottom:2rem; 
+  font-weight:600; 
+  font-size:1.3rem;
+  box-shadow: 0 8px 32px rgba(245,87,108,0.3);
+  position:relative;
+  overflow:hidden;
+}
+
+#winner-box::before {
+  content:'🏆';
+  position:absolute;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:4rem;
+  opacity:0.3;
+}
+
+.stats-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap:1.5rem;
+  margin-bottom:2rem;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  border-radius:16px;
+  padding:1.5rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  text-align:center;
+}
+
+.stat-value {
+  font-size:2.5rem;
+  font-weight:800;
+  background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size:0.9rem;
+  opacity:0.8;
+  margin-top:0.5rem;
+  font-weight:500;
+}
+
+table { 
+  width:100%; 
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:0.95rem;
+}
+
+table th, table td { 
+  padding:1rem; 
+  text-align:left;
+}
+
+table th { 
+  background: rgba(255,255,255,0.15);
+  color:white; 
+  cursor:pointer; 
+  user-select:none;
+  font-weight:600;
+  text-transform:uppercase;
+  font-size:0.85rem;
+  letter-spacing:0.5px;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+table th:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+table tbody tr { 
+  background: rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+}
+
+table tbody tr:hover { 
+  background: rgba(255,255,255,0.15);
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+table tbody tr td {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+table tbody tr:first-child td:first-child { border-top-left-radius:12px; }
+table tbody tr:first-child td:last-child { border-top-right-radius:12px; }
+table tbody tr:last-child td:first-child { border-bottom-left-radius:12px; }
+table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
+
+.rank-badge {
+  display:inline-block;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  text-align:center;
+  line-height:32px;
+  font-weight:700;
+  font-size:0.9rem;
+}
+
+.rank-1 { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color:#000; }
+.rank-2 { background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%); color:#000; }
+.rank-3 { background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%); }
+
+.team-logo {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  font-size:1.2rem;
+  margin-right:0.75rem;
+  vertical-align:middle;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.team-cell {
+  display:flex;
+  align-items:center;
+  gap:0.75rem;
+}
+
+.team-info {
+  display:flex;
+  flex-direction:column;
+}
+
+.team-name {
+  font-weight:600;
+  font-size:1rem;
+}
+
+.owner-name {
+  font-size:0.85rem;
+  opacity:0.7;
+}
+
+.filter-container { 
+  margin-bottom:1.5rem; 
+  display:flex; 
+  gap:1rem; 
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.filter-container label { 
+  font-weight:600;
+  font-size:0.95rem;
+}
+
+.filter-container select { 
+  padding:0.75rem 1rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius:10px;
+  color:white;
+  font-weight:500;
+  cursor:pointer;
+  transition: all 0.3s ease;
+  font-size:0.95rem;
+}
+
+.filter-container select:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.filter-container select option {
+  background:#764ba2;
+  color:white;
+}
+
+.score-display {
+  font-weight:700;
+  font-size:1.1rem;
+  padding:0.5rem 1rem;
+  background: rgba(255,255,255,0.1);
+  border-radius:8px;
+  display:inline-block;
+}
+
+.transaction-badge {
+  display:inline-block;
+  padding:0.4rem 0.8rem;
+  border-radius:8px;
+  font-size:0.85rem;
+  font-weight:600;
+  text-transform:uppercase;
+}
+
+.transaction-waiver { background: rgba(52, 211, 153, 0.3); color:#34d399; }
+.transaction-trade { background: rgba(251, 146, 60, 0.3); color:#fb923c; }
+.transaction-add { background: rgba(96, 165, 250, 0.3); color:#60a5fa; }
+.transaction-drop { background: rgba(239, 68, 68, 0.3); color:#ef4444; }
+
+#last-updated {
+  text-align:center;
+  padding:1rem;
+  opacity:0.6;
+  font-size:0.9rem;
+  margin-top:2rem;
+}
+
+#debug-info { 
+  margin-top:2rem; 
+  padding:1rem; 
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  border:1px solid rgba(255,255,255,0.2); 
+  border-radius:12px; 
+  font-family:monospace; 
+  font-size:0.8rem; 
+  white-space:pre-wrap;
+  max-height:400px;
+  overflow-y:auto;
+}
+
+.page { animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius:10px; }
+::-webkit-scrollbar-thumb { 
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius:10px; 
+}
+::-webkit-scrollbar-thumb:hover { background: #764ba2; }
+
+@media (max-width: 768px) {
+  header h1 { font-size:1.8rem; }
+  .section-title { font-size:1.4rem; }
+  table { font-size:0.85rem; }
+  table th, table td { padding:0.75rem 0.5rem; }
+  .team-logo { width:32px; height:32px; font-size:1rem; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Ridgewood Fantasy 2026</h1>
+  <h1>⚡ Ridgewood Fantasy 2026 ⚡</h1>
 </header>
 
 <nav>
@@ -46,64 +390,86 @@ tr:hover { background:#e0e7ff; }
   <div class="section-title">Latest Winner</div>
   <div id="winner-box">Loading...</div>
 
+  <div class="stats-grid" id="stats-grid">
+    <!-- Stats will be populated here -->
+  </div>
+
   <div class="section-title">Money Leaderboard</div>
-  <div class="summary-box" id="total-bonuses">Total Bonuses Paid: $0</div>
-  <table id="money-leaderboard">
-    <thead>
-      <tr><th>Rank</th><th>Owner</th><th>Team</th><th>Wins</th><th>Total Bonuses</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="card">
+    <table id="money-leaderboard">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Team</th>
+          <th>Weekly Wins</th>
+          <th>Total Earnings</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="standings" class="page" style="display:none">
-  <div class="section-title">Standings</div>
-  <table id="standings-table">
-    <thead>
-      <tr>
-        <th onclick="sortTable('standings-table',0)">Rank</th>
-        <th onclick="sortTable('standings-table',1)">Owner</th>
-        <th onclick="sortTable('standings-table',2)">Team</th>
-        <th onclick="sortTable('standings-table',3)">Wins</th>
-        <th onclick="sortTable('standings-table',4)">Losses</th>
-        <th onclick="sortTable('standings-table',5)">Ties</th>
-        <th onclick="sortTable('standings-table',6)">Points For</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="section-title">League Standings</div>
+  <div class="card">
+    <table id="standings-table">
+      <thead>
+        <tr>
+          <th onclick="sortTable('standings-table',0)">Rank</th>
+          <th onclick="sortTable('standings-table',1)">Team</th>
+          <th onclick="sortTable('standings-table',2)">Record</th>
+          <th onclick="sortTable('standings-table',3)">Points For</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="matchups" class="page" style="display:none">
   <div class="section-title">Weekly Matchups</div>
   <div class="filter-container">
-    <label for="matchup-week">Week:</label>
+    <label for="matchup-week">Filter by Week:</label>
     <select id="matchup-week" onchange="filterMatchups()">
       <option value="all">All Weeks</option>
     </select>
   </div>
-  <table id="matchups-table">
-    <thead>
-      <tr><th>Week</th><th>Home Team</th><th>Away Team</th><th>Score</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="card">
+    <table id="matchups-table">
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Team 1</th>
+          <th>Team 2</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="transactions" class="page" style="display:none">
-  <div class="section-title">Transactions</div>
+  <div class="section-title">Recent Transactions</div>
   <div class="filter-container">
-    <label for="trans-week">Week:</label>
+    <label for="trans-week">Filter by Week:</label>
     <select id="trans-week" onchange="filterTransactions()">
       <option value="all">All Weeks</option>
     </select>
   </div>
-  <table id="transactions-table">
-    <thead>
-      <tr><th>Week</th><th>Owner</th><th>Transaction</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="card">
+    <table id="transactions-table">
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Team</th>
+          <th>Transaction</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="last-updated"></div>
@@ -119,7 +485,7 @@ const URL_WEEKLY_BONUSES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-P
 const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1937108615&single=true&output=csv';
 
 let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=0;
-let rosterToOwner = {}; // Map roster_id to owner_id
+let rosterToOwner = {};
 let debugLog = [];
 
 function addDebug(msg) {
@@ -129,11 +495,30 @@ function addDebug(msg) {
   console.log(msg);
 }
 
+function getTeamInitials(teamName) {
+  return teamName.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase();
+}
+
+function getTeamColor(teamName) {
+  const colors = [
+    ['#667eea', '#764ba2'], ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'],
+    ['#43e97b', '#38f9d7'], ['#fa709a', '#fee140'], ['#30cfd0', '#330867'],
+    ['#a8edea', '#fed6e3'], ['#ff9a9e', '#fecfef']
+  ];
+  const hash = teamName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+}
+
+function createTeamLogo(teamName) {
+  const initials = getTeamInitials(teamName);
+  const [color1, color2] = getTeamColor(teamName);
+  return `<div class="team-logo" style="background: linear-gradient(135deg, ${color1} 0%, ${color2} 100%);">${initials}</div>`;
+}
+
 function csvToArray(csv){
   const lines = csv.trim().split('\n');
   const headers = lines[0].split(',').map(h=>h.trim());
   return lines.slice(1).map(line=>{
-    // Handle quoted fields that may contain commas
     const values = [];
     let current = '';
     let inQuotes = false;
@@ -168,24 +553,17 @@ async function loadData(){
     
     addDebug('All CSVs fetched successfully');
 
-    // Parse owners and log for debugging
     const ownersArray = csvToArray(ownersCsv);
     addDebug(`Owners loaded: ${ownersArray.length} entries`);
-    addDebug(`Owner columns: ${Object.keys(ownersArray[0] || {}).join(', ')}`);
-    addDebug(`First owner sample: ${JSON.stringify(ownersArray[0])}`);
     
     ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'Unknown' });
     addDebug(`Owner IDs in map: ${Object.keys(owners).join(', ')}`);
     
-    // Parse rosters and build roster_id to owner_id mapping
     const rostersArray = csvToArray(rostersCsv);
     addDebug(`Rosters loaded: ${rostersArray.length} entries`);
-    addDebug(`Roster columns: ${Object.keys(rostersArray[0] || {}).join(', ')}`);
-    addDebug(`First roster sample: ${JSON.stringify(rostersArray[0])}`);
     
     rostersArray.forEach(r=>{
       rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) };
-      // Build the roster_id to owner_id mapping
       if(r.roster_id && r.owner_id) {
         rosterToOwner[r.roster_id] = r.owner_id;
       }
@@ -194,24 +572,18 @@ async function loadData(){
     
     bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0)}));
     
-    // Parse matchups and log for debugging
     const matchupsArray = csvToArray(matchupsCsv);
     addDebug(`Matchups loaded: ${matchupsArray.length} entries`);
-    addDebug(`Matchup columns: ${Object.keys(matchupsArray[0] || {}).join(', ')}`);
-    addDebug(`First matchup sample: ${JSON.stringify(matchupsArray[0])}`);
     matchups = matchupsArray.map(m=>({...m, week:Number(m.week||0), score:m.score||0}));
     
-    // Parse transactions and log for debugging
     const transactionsArray = csvToArray(transactionsCsv);
     addDebug(`Transactions loaded: ${transactionsArray.length} entries`);
-    addDebug(`Transaction columns: ${Object.keys(transactionsArray[0] || {}).join(', ')}`);
-    addDebug(`First transaction sample: ${JSON.stringify(transactionsArray[0])}`);
     transactions = transactionsArray;
 
     const configRows = csvToArray(configCsv);
     const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
     lastWeek = weekRow ? Number(weekRow.Value||0) : 0;
-    document.getElementById('last-updated').textContent = lastWeek>0?`Week ${lastWeek} processed`:'No weeks processed yet';
+    document.getElementById('last-updated').textContent = lastWeek>0?`Last Updated: Week ${lastWeek}`:'No weeks processed yet';
 
     populateWeekFilters();
     loadHome(); loadStandings(); loadMatchups(); loadTransactions();
@@ -238,8 +610,34 @@ function loadHome(){
   const winnerBox = document.getElementById('winner-box');
   if(latest){
     const owner = owners[latest.owner_id]||{ display_name:'Unknown', team_name:'Unknown' };
-    winnerBox.innerHTML = `${owner.display_name} (${owner.team_name}) won <strong>$${latest.amount}</strong> in Week ${latest.week}`;
+    winnerBox.innerHTML = `${createTeamLogo(owner.team_name)} <span style="vertical-align:middle;">${owner.display_name} (${owner.team_name}) won <strong>$${latest.amount}</strong> in Week ${latest.week}!</span>`;
   } else winnerBox.textContent='No winners yet';
+
+  // Stats cards
+  const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
+  const totalTeams = Object.keys(owners).length;
+  const totalWeeks = lastWeek;
+  const avgPayout = totalPaid / (totalWeeks || 1);
+  
+  const statsGrid = document.getElementById('stats-grid');
+  statsGrid.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value">$${totalPaid}</div>
+      <div class="stat-label">Total Paid Out</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${totalTeams}</div>
+      <div class="stat-label">Teams</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${totalWeeks}</div>
+      <div class="stat-label">Weeks Played</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">$${avgPayout.toFixed(0)}</div>
+      <div class="stat-label">Avg per Week</div>
+    </div>
+  `;
 
   const moneyMap={};
   bonuses.forEach(b=>{
@@ -249,15 +647,26 @@ function loadHome(){
   });
   const leaderboard=Object.values(moneyMap).sort((a,b)=>b.total-a.total);
   const tbody=document.querySelector('#money-leaderboard tbody'); tbody.innerHTML='';
-  let totalPaid=0;
+  
   leaderboard.forEach((l,i)=>{
-    totalPaid+=l.total;
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${l.owner.display_name}</td><td>${l.owner.team_name}</td><td>${l.wins}</td><td>$${l.total}</td>`;
-    if(i<3) tr.style.background='#fde68a';
+    const rankClass = i < 3 ? `rank-${i+1}` : '';
+    tr.innerHTML=`
+      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+      <td>
+        <div class="team-cell">
+          ${createTeamLogo(l.owner.team_name)}
+          <div class="team-info">
+            <span class="team-name">${l.owner.team_name}</span>
+            <span class="owner-name">${l.owner.display_name}</span>
+          </div>
+        </div>
+      </td>
+      <td>${l.wins}</td>
+      <td style="font-weight:700; font-size:1.1rem; color:#ffd89b;">$${l.total}</td>
+    `;
     tbody.appendChild(tr);
   });
-  document.getElementById('total-bonuses').textContent=`Total Bonuses Paid: $${totalPaid}`;
 }
 
 function loadStandings(){
@@ -266,7 +675,21 @@ function loadStandings(){
   data.forEach((r,i)=>{
     const o=owners[r.owner_id]||{ display_name:'Unknown', team_name:'Unknown' };
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${o.display_name}</td><td>${o.team_name}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.ties}</td><td>${r.points_for}</td>`;
+    const rankClass = i < 3 ? `rank-${i+1}` : '';
+    tr.innerHTML=`
+      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+      <td>
+        <div class="team-cell">
+          ${createTeamLogo(o.team_name)}
+          <div class="team-info">
+            <span class="team-name">${o.team_name}</span>
+            <span class="owner-name">${o.display_name}</span>
+          </div>
+        </div>
+      </td>
+      <td style="font-weight:600;">${r.wins}-${r.losses}${r.ties > 0 ? '-' + r.ties : ''}</td>
+      <td style="font-weight:700; color:#ffd89b;">${r.points_for}</td>
+    `;
     tbody.appendChild(tr);
   });
 }
@@ -274,7 +697,6 @@ function loadStandings(){
 function loadMatchups(filterWeek='all'){
   const tbody=document.querySelector('#matchups-table tbody'); tbody.innerHTML='';
   
-  // Group matchups by week and matchup_id to pair home/away teams
   const matchupPairs = {};
   matchups.forEach(m=>{
     const key = `${m.week}-${m.matchup_id}`;
@@ -283,66 +705,5 @@ function loadMatchups(filterWeek='all'){
   });
   
   Object.values(matchupPairs).forEach(pair=>{
-    if(pair.length !== 2) return; // Skip if not a valid pair
+    if(pair.length !== 2) return;
     const week = pair[0].week;
-    if(filterWeek!=='all' && week!=filterWeek) return;
-    
-    const team1_roster_id = pair[0].roster_id;
-    const team2_roster_id = pair[1].roster_id;
-    const team1_owner_id = rosterToOwner[team1_roster_id];
-    const team2_owner_id = rosterToOwner[team2_roster_id];
-    
-    const team1=owners[team1_owner_id]||{ team_name:'Unknown' };
-    const team2=owners[team2_owner_id]||{ team_name:'Unknown' };
-    const score = `${pair[0].points} - ${pair[1].points}`;
-    
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${week}</td><td>${team1.team_name}</td><td>${team2.team_name}</td><td>${score}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function loadTransactions(filterWeek='all'){
-  const tbody=document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
-  transactions.filter(t=>filterWeek==='all'||Number(t.week)==filterWeek).forEach(t=>{
-    // roster_ids might be comma-separated for trades
-    const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0] : '';
-    const ownerId = rosterToOwner[rosterIds];
-    const owner=owners[ownerId]||{ team_name:'Unknown' };
-    const tr=document.createElement('tr');
-    const text=t.type||'N/A';
-    const week=Number(t.week)||0;
-    tr.innerHTML=`<td>${week}</td><td>${owner.team_name}</td><td>${text}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function filterMatchups(){ loadMatchups(document.getElementById('matchup-week').value); }
-function filterTransactions(){ loadTransactions(document.getElementById('trans-week').value); }
-
-function showPage(page){
-  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
-  document.getElementById(page).style.display='block';
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  document.querySelector(`nav button[onclick="showPage('${page}')"]`).classList.add('active');
-}
-
-function sortTable(tableId, col){
-  const table=document.getElementById(tableId); let switching=true, dir='asc';
-  while(switching){
-    switching=false; const rows=table.rows; for(let i=1;i<rows.length-1;i++){
-      let shouldSwitch=false, x=rows[i].getElementsByTagName('TD')[col], y=rows[i+1].getElementsByTagName('TD')[col];
-      let xContent=x.textContent||x.innerText, yContent=y.textContent||y.innerText;
-      if(!isNaN(xContent) && !isNaN(yContent)){ xContent=Number(xContent); yContent=Number(yContent); }
-      if((dir=='asc' && xContent>yContent) || (dir=='desc' && xContent<yContent)){ shouldSwitch=true; break; }
-    }
-    if(shouldSwitch){ rows[i].parentNode.insertBefore(rows[i+1],rows[i]); switching=true; }
-    else if(dir=='asc'){ dir='desc'; switching=true; }
-  }
-}
-
-window.onload = loadData;
-</script>
-
-</body>
-</html>
