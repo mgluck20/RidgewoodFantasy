@@ -354,7 +354,6 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
   to { opacity:1; transform:translateY(0); }
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar { width:10px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius:10px; }
 ::-webkit-scrollbar-thumb { 
@@ -390,9 +389,7 @@ table tbody tr:last-child td:last-child { border-bottom-right-radius:12px; }
   <div class="section-title">Latest Winner</div>
   <div id="winner-box">Loading...</div>
 
-  <div class="stats-grid" id="stats-grid">
-    <!-- Stats will be populated here -->
-  </div>
+  <div class="stats-grid" id="stats-grid"></div>
 
   <div class="section-title">Money Leaderboard</div>
   <div class="card">
@@ -613,7 +610,6 @@ function loadHome(){
     winnerBox.innerHTML = `${createTeamLogo(owner.team_name)} <span style="vertical-align:middle;">${owner.display_name} (${owner.team_name}) won <strong>$${latest.amount}</strong> in Week ${latest.week}!</span>`;
   } else winnerBox.textContent='No winners yet';
 
-  // Stats cards
   const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
   const totalTeams = Object.keys(owners).length;
   const totalWeeks = lastWeek;
@@ -707,3 +703,94 @@ function loadMatchups(filterWeek='all'){
   Object.values(matchupPairs).forEach(pair=>{
     if(pair.length !== 2) return;
     const week = pair[0].week;
+    if(filterWeek!=='all' && week!=filterWeek) return;
+    
+    const team1_roster_id = pair[0].roster_id;
+    const team2_roster_id = pair[1].roster_id;
+    const team1_owner_id = rosterToOwner[team1_roster_id];
+    const team2_owner_id = rosterToOwner[team2_roster_id];
+    
+    const team1=owners[team1_owner_id]||{ team_name:'Unknown' };
+    const team2=owners[team2_owner_id]||{ team_name:'Unknown' };
+    const score1 = Number(pair[0].points);
+    const score2 = Number(pair[1].points);
+    const winner = score1 > score2 ? 0 : 1;
+    
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-weight:700;">Week ${week}</td>
+      <td>
+        <div class="team-cell">
+          ${createTeamLogo(team1.team_name)}
+          <span class="team-name" style="opacity:${winner === 0 ? 1 : 0.6};">${team1.team_name}</span>
+        </div>
+      </td>
+      <td>
+        <div class="team-cell">
+          ${createTeamLogo(team2.team_name)}
+          <span class="team-name" style="opacity:${winner === 1 ? 1 : 0.6};">${team2.team_name}</span>
+        </div>
+      </td>
+      <td>
+        <span class="score-display" style="color:${winner === 0 ? '#34d399' : 'rgba(255,255,255,0.6)'};">${score1.toFixed(2)}</span>
+        <span style="margin:0 0.5rem;">-</span>
+        <span class="score-display" style="color:${winner === 1 ? '#34d399' : 'rgba(255,255,255,0.6)'};">${score2.toFixed(2)}</span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function loadTransactions(filterWeek='all'){
+  const tbody=document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
+  transactions.filter(t=>filterWeek==='all'||Number(t.week)==filterWeek).forEach(t=>{
+    const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0] : '';
+    const ownerId = rosterToOwner[rosterIds];
+    const owner=owners[ownerId]||{ team_name:'Unknown' };
+    const tr=document.createElement('tr');
+    const transType = t.type || 'N/A';
+    const badgeClass = `transaction-${transType.toLowerCase()}`;
+    const week=Number(t.week)||0;
+    tr.innerHTML=`
+      <td style="font-weight:700;">Week ${week}</td>
+      <td>
+        <div class="team-cell">
+          ${createTeamLogo(owner.team_name)}
+          <span class="team-name">${owner.team_name}</span>
+        </div>
+      </td>
+      <td><span class="transaction-badge ${badgeClass}">${transType}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterMatchups(){ loadMatchups(document.getElementById('matchup-week').value); }
+function filterTransactions(){ loadTransactions(document.getElementById('trans-week').value); }
+
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.getElementById(page).style.display='block';
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`nav button[onclick="showPage('${page}')"]`).classList.add('active');
+}
+
+function sortTable(tableId, col){
+  const table=document.getElementById(tableId); let switching=true, dir='asc';
+  while(switching){
+    switching=false; const rows=table.rows; for(let i=1;i<rows.length-1;i++){
+      let shouldSwitch=false, x=rows[i].getElementsByTagName('TD')[col], y=rows[i+1].getElementsByTagName('TD')[col];
+      let xContent=x.textContent||x.innerText, yContent=y.textContent||y.innerText;
+      if(!isNaN(xContent) && !isNaN(yContent)){ xContent=Number(xContent); yContent=Number(yContent); }
+      if((dir=='asc' && xContent>yContent) || (dir=='desc' && xContent<yContent)){ shouldSwitch=true; break; }
+    }
+    if(shouldSwitch){ rows[i].parentNode.insertBefore(rows[i+1],rows[i]); switching=true; }
+    else if(dir=='asc'){ dir='desc'; switching=true; }
+  }
+}
+
+window.onload = loadData;
+</script>
+
+</body>
+</html>
