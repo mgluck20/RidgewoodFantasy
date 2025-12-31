@@ -7,32 +7,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { 
-  font-family:'Inter',sans-serif; 
+body {
+  font-family:'Inter',sans-serif;
   background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-  color:#fff; 
+  color:#fff;
   min-height:100vh;
 }
-
-header { 
+header {
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px);
-  padding:2rem 1rem; 
+  padding:2rem 1rem;
   text-align:center;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   position:relative;
 }
-
-header h1 { 
-  font-size:2.5rem; 
-  font-weight:800; 
+header h1 {
+  font-size:2.5rem;
+  font-weight:800;
   letter-spacing:-1px;
   background: linear-gradient(to right, #00d4ff, #00ffbb);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
 .sleeper-link {
   position:absolute;
   right:2rem;
@@ -47,37 +44,33 @@ header h1 {
   font-size:0.9rem;
   transition: all 0.3s ease;
 }
-
 .sleeper-link:hover {
   transform:translateY(-50%) scale(1.05);
   box-shadow: 0 8px 20px rgba(0,212,255,0.4);
 }
-
-nav { 
-  display:flex; 
-  justify-content:center; 
-  gap:0.5rem; 
+nav {
+  display:flex;
+  justify-content:center;
+  gap:0.5rem;
   background: rgba(0,0,0,0.3);
   backdrop-filter: blur(10px);
-  padding:1rem; 
+  padding:1rem;
   flex-wrap:wrap;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
-
-nav button { 
+nav button {
   background: rgba(255,255,255,0.1);
-  border:none; 
-  color:white; 
-  font-weight:600; 
-  cursor:pointer; 
-  font-size:0.9rem; 
+  border:none;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  font-size:0.9rem;
   padding:0.75rem 1.25rem;
   border-radius:12px;
   transition: all 0.3s ease;
   position:relative;
   overflow:hidden;
 }
-
 nav button::before {
   content:'';
   position:absolute;
@@ -86,35 +79,30 @@ nav button::before {
   opacity:0;
   transition: opacity 0.3s ease;
 }
-
 nav button:hover::before { opacity:1; }
-nav button:hover { 
+nav button:hover {
   background: rgba(255,255,255,0.2);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
-
-nav button.active { 
+nav button.active {
   background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   color:#0f2027;
   box-shadow: 0 4px 15px rgba(0,212,255,0.4);
 }
-
-main { 
-  padding:2rem; 
-  max-width:1400px; 
+main {
+  padding:2rem;
+  max-width:1400px;
   margin:auto;
 }
-
-.section-title { 
-  font-size:1.8rem; 
-  margin-bottom:1.5rem; 
+.section-title {
+  font-size:1.8rem;
+  margin-bottom:1.5rem;
   font-weight:700;
   display:flex;
   align-items:center;
   gap:0.5rem;
 }
-
 .section-title::before {
   content:'';
   width:4px;
@@ -122,7 +110,6 @@ main {
   background: linear-gradient(to bottom, #00d4ff, #00ffbb);
   border-radius:2px;
 }
-
 .card {
   background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
@@ -132,20 +119,18 @@ main {
   border: 1px solid rgba(255,255,255,0.15);
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
-
-#winner-box { 
+#winner-box {
   background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
   color:#0f2027;
-  padding:2rem; 
-  border-radius:20px; 
-  margin-bottom:2rem; 
-  font-weight:600; 
+  padding:2rem;
+  border-radius:20px;
+  margin-bottom:2rem;
+  font-weight:600;
   font-size:1.3rem;
   box-shadow: 0 8px 32px rgba(0,212,255,0.3);
   position:relative;
   overflow:hidden;
 }
-
 #winner-box::before {
   content:'🏆';
   position:absolute;
@@ -155,14 +140,12 @@ main {
   font-size:4rem;
   opacity:0.5;
 }
-
 .stats-grid {
   display:grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap:1.5rem;
   margin-bottom:2rem;
 }
-
 .stat-card {
   background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
@@ -171,7 +154,6 @@ main {
   border: 1px solid rgba(255,255,255,0.15);
   text-align:center;
 }
-
 .stat-value {
   font-size:2.5rem;
   font-weight:800;
@@ -180,30 +162,26 @@ main {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
 .stat-label {
   font-size:0.9rem;
   opacity:0.8;
   margin-top:0.5rem;
   font-weight:500;
 }
-
-table { 
-  width:100%; 
+table {
+  width:100%;
   border-collapse:separate;
   border-spacing:0;
   font-size:0.95rem;
 }
-
-table th, table td { 
-  padding:1rem; 
+table th, table td {
+  padding:1rem;
   text-align:left;
 }
-
-table th { 
+table th {
   background: rgba(255,255,255,0.12);
-  color:white; 
-  cursor:pointer; 
+  color:white;
+  cursor:pointer;
   user-select:none;
   font-weight:600;
   text-transform:uppercase;
@@ -214,26 +192,21 @@ table th {
   top:0;
   z-index:10;
 }
-
 table th:hover {
   background: rgba(255,255,255,0.18);
 }
-
-table tbody tr { 
+table tbody tr {
   background: rgba(255,255,255,0.04);
   transition: all 0.2s ease;
 }
-
-table tbody tr:hover { 
+table tbody tr:hover {
   background: rgba(255,255,255,0.12);
   transform: scale(1.01);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
-
 table tbody tr td {
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
-
 .rank-badge {
   display:inline-block;
   width:32px;
@@ -246,11 +219,9 @@ table tbody tr td {
   font-size:0.9rem;
   color:#0f2027;
 }
-
 .rank-1 { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color:#000; }
 .rank-2 { background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%); color:#000; }
 .rank-3 { background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%); }
-
 .team-logo {
   width:40px;
   height:40px;
@@ -266,42 +237,35 @@ table tbody tr td {
   border: 2px solid rgba(255,255,255,0.3);
   color:#0f2027;
 }
-
 .team-cell {
   display:flex;
   align-items:center;
   gap:0.75rem;
 }
-
 .team-info {
   display:flex;
   flex-direction:column;
 }
-
 .team-name {
   font-weight:600;
   font-size:1rem;
 }
-
 .owner-name {
   font-size:0.85rem;
   opacity:0.7;
 }
-
-.filter-container { 
-  margin-bottom:1.5rem; 
-  display:flex; 
-  gap:1rem; 
+.filter-container {
+  margin-bottom:1.5rem;
+  display:flex;
+  gap:1rem;
   align-items:center;
   flex-wrap:wrap;
 }
-
-.filter-container label { 
+.filter-container label {
   font-weight:600;
   font-size:0.95rem;
 }
-
-.filter-container select { 
+.filter-container select {
   padding:0.75rem 1rem;
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.3);
@@ -312,16 +276,13 @@ table tbody tr td {
   transition: all 0.3s ease;
   font-size:0.95rem;
 }
-
 .filter-container select:hover {
   background: rgba(255,255,255,0.15);
 }
-
 .filter-container select option {
   background:#203a43;
   color:white;
 }
-
 .score-display {
   font-weight:700;
   font-size:1.1rem;
@@ -330,7 +291,6 @@ table tbody tr td {
   border-radius:8px;
   display:inline-block;
 }
-
 .transaction-badge {
   display:inline-block;
   padding:0.4rem 0.8rem;
@@ -339,12 +299,10 @@ table tbody tr td {
   font-weight:600;
   text-transform:uppercase;
 }
-
-.transaction-waiver { background: rgba(0, 212, 255, 0.3); color:#00d4ff; }
 .transaction-trade { background: rgba(255, 165, 0, 0.3); color:#ffa500; }
-.transaction-free-agent { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
-.transaction-add, .transaction-drop { background: rgba(255,255,255,0.15); color:#fff; }
-
+.transaction-free_agent, .transaction-waiver { background: rgba(0, 255, 187, 0.3); color:#00ffbb; }
+.transaction-add { background: rgba(0, 212, 255, 0.3); color:#00d4ff; }
+.transaction-drop { background: rgba(255, 100, 100, 0.3); color:#ff8888; }
 .playoff-bracket {
   background: rgba(255,255,255,0.08);
   backdrop-filter: blur(20px);
@@ -357,26 +315,22 @@ table tbody tr td {
   align-items:center;
   justify-content:center;
 }
-
 .playoff-placeholder {
   font-size:4rem;
   margin-bottom:1rem;
   opacity:0.3;
 }
-
 .playoff-text {
   font-size:1.5rem;
   font-weight:600;
   opacity:0.7;
 }
-
 .playoff-note {
   margin-top:1rem;
   opacity:0.5;
   font-size:1rem;
   max-width:600px;
 }
-
 #last-updated {
   text-align:center;
   padding:1rem;
@@ -384,36 +338,31 @@ table tbody tr td {
   font-size:0.9rem;
   margin-top:2rem;
 }
-
-#debug-info { 
-  margin-top:2rem; 
-  padding:1rem; 
+#debug-info {
+  margin-top:2rem;
+  padding:1rem;
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px);
-  border:1px solid rgba(255,255,255,0.2); 
-  border-radius:12px; 
-  font-family:monospace; 
-  font-size:0.8rem; 
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:12px;
+  font-family:monospace;
+  font-size:0.8rem;
   white-space:pre-wrap;
   max-height:400px;
   overflow-y:auto;
 }
-
 .page { animation: fadeIn 0.3s ease; }
-
 @keyframes fadeIn {
   from { opacity:0; transform:translateY(10px); }
   to { opacity:1; transform:translateY(0); }
 }
-
 ::-webkit-scrollbar { width:10px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius:10px; }
-::-webkit-scrollbar-thumb { 
+::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #00d4ff 0%, #00ffbb 100%);
-  border-radius:10px; 
+  border-radius:10px;
 }
 ::-webkit-scrollbar-thumb:hover { background: #00d4ff; }
-
 @media (max-width: 768px) {
   header h1 { font-size:1.8rem; }
   .sleeper-link { position:static; transform:none; margin-top:1rem; display:inline-block; }
@@ -425,12 +374,10 @@ table tbody tr td {
 </style>
 </head>
 <body>
-
 <header>
   <h1>⚡ Ridgewood Fantasy 2026 ⚡</h1>
   <a href="https://sleeper.com/leagues/1127785690072428544" target="_blank" class="sleeper-link">Open in Sleeper</a>
 </header>
-
 <nav>
   <button onclick="showPage('home')" class="active">Home</button>
   <button onclick="showPage('standings')">Standings</button>
@@ -439,14 +386,11 @@ table tbody tr td {
   <button onclick="showPage('playoffs')">Playoffs</button>
   <button onclick="showPage('trending')">Trending</button>
 </nav>
-
 <main>
 <div id="home" class="page">
   <div class="section-title">Latest Winner</div>
   <div id="winner-box">Loading...</div>
-
   <div class="stats-grid" id="stats-grid"></div>
-
   <div class="section-title">Money Leaderboard</div>
   <div class="card">
     <table id="money-leaderboard">
@@ -462,7 +406,6 @@ table tbody tr td {
     </table>
   </div>
 </div>
-
 <div id="standings" class="page" style="display:none">
   <div class="section-title">League Standings</div>
   <div class="card">
@@ -479,7 +422,6 @@ table tbody tr td {
     </table>
   </div>
 </div>
-
 <div id="matchups" class="page" style="display:none">
   <div class="section-title">Weekly Matchups</div>
   <div class="filter-container">
@@ -506,7 +448,6 @@ table tbody tr td {
     </table>
   </div>
 </div>
-
 <div id="transactions" class="page" style="display:none">
   <div class="section-title">Recent Transactions</div>
   <div class="filter-container">
@@ -520,7 +461,7 @@ table tbody tr td {
       <thead>
         <tr>
           <th>Week</th>
-          <th>Team</th>
+          <th>Team(s)</th>
           <th>Type</th>
           <th>Details</th>
         </tr>
@@ -529,7 +470,6 @@ table tbody tr td {
     </table>
   </div>
 </div>
-
 <div id="playoffs" class="page" style="display:none">
   <div class="section-title">Playoff Bracket</div>
   <div class="card">
@@ -542,18 +482,15 @@ table tbody tr td {
     </div>
   </div>
 </div>
-
 <div id="trending" class="page" style="display:none">
   <div class="section-title">Trending Players</div>
   <div class="card">
     <div id="trending-players">Loading trending players...</div>
   </div>
 </div>
-
 <div id="last-updated"></div>
 <div id="debug-info"></div>
 </main>
-
 <script>
 const URL_CONFIG = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=0&single=true&output=csv';
 const URL_OWNERS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1393036626&single=true&output=csv';
@@ -564,7 +501,7 @@ const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZ
 const SLEEPER_PLAYERS_URL = 'https://api.sleeper.app/v1/players/nfl';
 const SLEEPER_TRENDING_URL = 'https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=25';
 
-let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=17; // Default to 17 since season is over
+let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=17;
 let rosterToOwner = {};
 let sleeperPlayers = {};
 let debugLog = [];
@@ -574,6 +511,12 @@ function addDebug(msg) {
   const debugEl = document.getElementById('debug-info');
   if(debugEl) debugEl.textContent = debugLog.join('\n');
   console.log(msg);
+}
+
+function getPlayerName(playerId) {
+  const p = sleeperPlayers[playerId];
+  if (!p) return `Player ${playerId}`;
+  return `${p.first_name || ''} ${p.last_name || ''}`.trim() || `Player ${playerId}`;
 }
 
 function getTeamName(owner) {
@@ -619,7 +562,6 @@ function csvToArray(csv){
       } else current += char;
     }
     values.push(current.trim());
-    
     const obj={};
     headers.forEach((h,i)=>obj[h]=(values[i]||'').replace(/^"|"$/g,'').trim());
     return obj;
@@ -644,12 +586,10 @@ async function loadTrendingPlayers() {
     if (!response.ok) throw new Error('Trending API error');
     const trending = await response.json();
     const container = document.getElementById('trending-players');
-    
     if (!trending || trending.length === 0) {
       container.innerHTML = '<p style="text-align:center; opacity:0.7;">No trending players available</p>';
       return;
     }
-    
     let html = '<table style="width:100%;"><thead><tr><th>Rank</th><th>Player</th><th>Position</th><th>Team</th><th>Adds</th></tr></thead><tbody>';
     trending.forEach((item, i) => {
       const player = sleeperPlayers[item.player_id] || {};
@@ -673,9 +613,8 @@ async function loadTrendingPlayers() {
 async function loadData(){
   try {
     addDebug('Starting data load...');
-    
     await loadSleeperPlayers();
-    
+
     const [ownersCsv, rostersCsv, bonusesCsv, matchupsCsv, transactionsCsv, configCsv] = await Promise.all([
       fetch(URL_OWNERS).then(r=>r.text()),
       fetch(URL_ROSTERS).then(r=>r.text()),
@@ -684,57 +623,62 @@ async function loadData(){
       fetch(URL_TRANSACTIONS).then(r=>r.text()),
       fetch(URL_CONFIG).then(r=>r.text())
     ]);
-    
-    addDebug('All CSVs fetched successfully');
 
+    addDebug('All CSVs fetched successfully');
     const ownersArray = csvToArray(ownersCsv);
-    addDebug(`Owners loaded: ${ownersArray.length}`);
     ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'' });
-    
+
     const rostersArray = csvToArray(rostersCsv);
-    addDebug(`Rosters loaded: ${rostersArray.length}`);
     rostersArray.forEach(r=>{
       rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) };
-      if(r.roster_id && r.owner_id) {
-        rosterToOwner[r.roster_id] = r.owner_id;
+      if(r.roster_id && r.owner_id) rosterToOwner[r.roster_id] = r.owner_id;
+    });
+
+    bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0), bonus_type: b.bonus_type || 'HIGH_SCORE'}));
+    matchups = csvToArray(matchupsCsv).map(m=>({...m, week:Number(m.week||0), points:Number(m.points||0)}));
+    transactions = csvToArray(transactionsCsv).map(t => {
+      try {
+        return {
+          ...t,
+          week: Number(t.leg || t.week || 0),
+          roster_ids: t.roster_ids ? t.roster_ids.split(',').map(id => id.trim()) : [],
+          adds: t.adds ? JSON.parse(t.adds.replace(/'/g, '"')) : {},
+          drops: t.drops ? JSON.parse(t.drops.replace(/'/g, '"')) : {},
+          draft_picks: t.draft_picks ? JSON.parse(t.draft_picks.replace(/'/g, '"')) : [],
+          waiver_budget: t.waiver_budget ? JSON.parse(t.waiver_budget.replace(/'/g, '"')) : [],
+          type: t.type || 'unknown',
+          created: Number(t.created || 0)
+        };
+      } catch(e) {
+        addDebug(`Failed to parse transaction: ${e.message}`);
+        return { ...t, week: 0, type: 'error' };
       }
     });
-    
-    bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0), bonus_type: b.bonus_type || 'HIGH_SCORE'}));
-    addDebug(`Bonuses loaded: ${bonuses.length}`);
-    
-    matchups = csvToArray(matchupsCsv).map(m=>({...m, week:Number(m.week||0), points:Number(m.points||0)}));
-    
-    transactions = csvToArray(transactionsCsv);
 
-    // Try to get lastWeek from config, fall back to 17 (regular season length)
     const configRows = csvToArray(configCsv);
     const weekRow = configRows.find(r=>r.Key==='LastProcessedWeek');
     lastWeek = weekRow ? Math.min(Number(weekRow.Value||17), 17) : 17;
 
-    addDebug(`Weeks Played set to: ${lastWeek}`);
     document.getElementById('last-updated').textContent = `Season Complete – Regular season: 17 weeks`;
-
     populateWeekFilters();
     populateTeamFilter();
-    loadHome(); 
-    loadStandings(); 
-    loadMatchups(); 
+    loadHome();
+    loadStandings();
+    loadMatchups();
     loadTransactions();
     loadTrendingPlayers();
-    
+
     addDebug('✓ Data load complete!');
   } catch(error) {
     addDebug(`ERROR: ${error.message}`);
     console.error('Load error:', error);
-    // Fallback if anything fails
     lastWeek = 17;
     loadHome();
   }
 }
 
 function populateWeekFilters(){
-  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>Number(t.week||0))])).filter(w => w > 0).sort((a,b)=>a-b);
+  const weeks = Array.from(new Set([...matchups.map(m=>m.week), ...transactions.map(t=>t.week)])).filter(w => w > 0).sort((a,b)=>a-b);
   const matchupSelect = document.getElementById('matchup-week');
   const transSelect = document.getElementById('trans-week');
   weeks.forEach(w=>{
@@ -755,6 +699,7 @@ function populateTeamFilter(){
 }
 
 function loadHome(){
+  // ... (unchanged from your original)
   const latest = bonuses.sort((a,b)=>b.week-a.week)[0];
   const winnerBox = document.getElementById('winner-box');
   if(latest && latest.owner_id && owners[latest.owner_id]){
@@ -764,10 +709,8 @@ function loadHome(){
   } else {
     winnerBox.textContent='No weekly winners recorded';
   }
-
   const totalPaid = bonuses.reduce((sum, b) => sum + b.amount, 0);
   const totalTeams = Object.keys(owners).length;
-
   const statsGrid = document.getElementById('stats-grid');
   statsGrid.innerHTML = `
     <div class="stat-card">
@@ -783,7 +726,6 @@ function loadHome(){
       <div class="stat-label">Weeks Played</div>
     </div>
   `;
-
   const moneyMap = {};
   Object.keys(owners).forEach(ownerId => {
     moneyMap[ownerId] = { total:0, wins:0, owner: owners[ownerId] };
@@ -795,10 +737,8 @@ function loadHome(){
       if(b.bonus_type === 'HIGH_SCORE' || b.bonus_type.includes('HIGH')) mapEntry.wins += 1;
     }
   });
-
   const leaderboard = Object.values(moneyMap).sort((a,b)=> b.wins - a.wins || b.total - a.total);
   const tbody = document.querySelector('#money-leaderboard tbody'); tbody.innerHTML='';
-  
   leaderboard.forEach((l,i)=>{
     const teamName = getTeamName(l.owner);
     const tr=document.createElement('tr');
@@ -822,6 +762,7 @@ function loadHome(){
 }
 
 function loadStandings(){
+  // ... (unchanged)
   const data = Object.values(rosters).sort((a,b)=> (b.wins - a.wins) || (b.points_for - a.points_for));
   const tbody = document.querySelector('#standings-table tbody'); tbody.innerHTML='';
   data.forEach((r,i)=>{
@@ -848,35 +789,28 @@ function loadStandings(){
 }
 
 function loadMatchups(selectedWeek='all', selectedTeam='all'){
+  // ... (unchanged)
   const tbody = document.querySelector('#matchups-table tbody'); tbody.innerHTML='';
-  
   const matchupPairs = {};
   matchups.forEach(m=>{
     const key = `${m.week}-${m.matchup_id}`;
     if(!matchupPairs[key]) matchupPairs[key] = [];
     matchupPairs[key].push(m);
   });
-  
   Object.values(matchupPairs).forEach(pair=>{
     if(pair.length !== 2) return;
     const week = pair[0].week;
     if(selectedWeek !== 'all' && week != Number(selectedWeek)) return;
-    
     const team1_owner_id = rosterToOwner[pair[0].roster_id];
     const team2_owner_id = rosterToOwner[pair[1].roster_id];
-    
     const team1 = owners[team1_owner_id] || { display_name:'Unknown', team_name:'' };
     const team2 = owners[team2_owner_id] || { display_name:'Unknown', team_name:'' };
-    
     const team1Name = getTeamName(team1);
     const team2Name = getTeamName(team2);
-    
     if(selectedTeam !== 'all' && team1Name !== selectedTeam && team2Name !== selectedTeam) return;
-    
     const score1 = pair[0].points;
     const score2 = pair[1].points;
     const winner = score1 > score2 ? 0 : (score2 > score1 ? 1 : -1);
-    
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td style="font-weight:700;">Week ${week}</td>
@@ -902,43 +836,86 @@ function loadMatchups(selectedWeek='all', selectedTeam='all'){
   });
 }
 
+// === FIXED loadTransactions ===
 function loadTransactions(filterWeek='all'){
-  const tbody = document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
-  transactions
-    .filter(t => filterWeek==='all' || Number(t.week||0) == Number(filterWeek))
-    .sort((a,b) => (b.week || 0) - (a.week || 0) || (b.timestamp || 0) - (a.timestamp || 0))
-    .forEach(t=>{
-      const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0].trim() : '';
-      const ownerId = rosterToOwner[rosterIds] || '';
-      const owner = owners[ownerId] || { display_name:'Unknown', team_name:'' };
+  const tbody = document.querySelector('#transactions-table tbody');
+  tbody.innerHTML = '';
+
+  const filtered = transactions
+    .filter(t => filterWeek === 'all' || t.week == Number(filterWeek))
+    .sort((a, b) => b.created - a.created || b.week - a.week);
+
+  filtered.forEach(t => {
+    const type = t.type.toLowerCase();
+    let typeDisplay = type === 'free_agent' ? 'FREE AGENT' : type.toUpperCase().replace('_', ' ');
+    let badgeClass = `transaction-${type}`;
+
+    // Handle team display (multiple for trades)
+    let teamCells = '';
+    if (t.roster_ids.length > 1) {
+      teamCells = t.roster_ids.map(rid => {
+        const ownerId = rosterToOwner[rid];
+        const owner = owners[ownerId] || { display_name: 'Unknown' };
+        const teamName = getTeamName(owner);
+        return `<div class="team-cell">${createTeamLogo(teamName)}<span class="team-name">${teamName}</span></div>`;
+      }).join(' <span style="margin:0 0.5rem;">↔</span> ');
+    } else if (t.roster_ids.length === 1) {
+      const ownerId = rosterToOwner[t.roster_ids[0]];
+      const owner = owners[ownerId] || { display_name: 'Unknown' };
       const teamName = getTeamName(owner);
-      
-      let details = 'No details available';
-      let typeDisplay = (t.type || 'UNKNOWN').toUpperCase().replace('_', ' ');
-      let typeKey = (t.type || 'unknown').toLowerCase();
+      teamCells = `<div class="team-cell">${createTeamLogo(teamName)}<span class="team-name">${teamName}</span></div>`;
+    } else {
+      teamCells = 'Unknown Team';
+    }
 
-      // Fix Free Agent formatting
-      if (typeKey === 'free_agent' || typeKey === 'free agent') {
-        typeDisplay = 'FREE AGENT';
-        typeKey = 'free-agent';
-      }
+    // Build details
+    let details = [];
 
-      const badgeClass = `transaction-${typeKey}`;
+    // Adds
+    if (t.adds && Object.keys(t.adds).length > 0) {
+      Object.keys(t.adds).forEach(pid => {
+        details.push(`<span style="color:#00d4ff;">+ ${getPlayerName(pid)}</span>`);
+      });
+    }
 
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td style="font-weight:700;">Week ${t.week||'?'}</td>
-        <td>
-          <div class="team-cell">
-            ${createTeamLogo(teamName)}
-            <span class="team-name">${teamName}</span>
-          </div>
-        </td>
-        <td><span class="transaction-badge ${badgeClass}">${typeDisplay}</span></td>
-        <td>${details}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+    // Drops
+    if (t.drops && Object.keys(t.drops).length > 0) {
+      Object.keys(t.drops).forEach(pid => {
+        details.push(`<span style="color:#ff8888;">- ${getPlayerName(pid)}</span>`);
+      });
+    }
+
+    // Draft picks
+    if (t.draft_picks && t.draft_picks.length > 0) {
+      t.draft_picks.forEach(pick => {
+        const fromOwnerId = rosterToOwner[pick.previous_owner_id] || rosterToOwner[pick.roster_id];
+        const toOwnerId = rosterToOwner[pick.owner_id];
+        const fromTeam = getTeamName(owners[fromOwnerId] || {});
+        const toTeam = getTeamName(owners[toOwnerId] || {});
+        details.push(`${fromTeam} → ${toTeam}: ${pick.season} Round ${pick.round} pick`);
+      });
+    }
+
+    // FAAB in trade
+    if (t.waiver_budget && t.waiver_budget.length > 0) {
+      t.waiver_budget.forEach(b => {
+        const senderTeam = getTeamName(owners[rosterToOwner[b.sender]] || {});
+        const receiverTeam = getTeamName(owners[rosterToOwner[b.receiver]] || {});
+        details.push(`${senderTeam} sends $${b.amount} FAAB → ${receiverTeam}`);
+      });
+    }
+
+    if (details.length === 0) details.push('No player movement');
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:700;">Week ${t.week || '?'}</td>
+      <td>${teamCells}</td>
+      <td><span class="transaction-badge ${badgeClass}">${typeDisplay}</span></td>
+      <td>${details.join('<br>')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function filterMatchups(){
@@ -959,6 +936,7 @@ function showPage(page){
 }
 
 function sortTable(tableId, col){
+  // ... (your existing sort function)
   const table = document.getElementById(tableId);
   let switching = true;
   let dir = 'asc';
@@ -967,8 +945,8 @@ function sortTable(tableId, col){
     const rows = table.rows;
     for(let i=1; i<rows.length-1; i++){
       let shouldSwitch = false;
-      let x = rows[i].cells[col];
-      let y = rows[i+1].cells[col];
+      let x = rows[i].getElementsByTagName("TD")[col];
+      let y = rows[i+1].getElementsByTagName("TD")[col];
       let xVal = x.textContent.trim();
       let yVal = y.textContent.trim();
       if(!isNaN(xVal) && !isNaN(yVal)){
@@ -992,6 +970,5 @@ function sortTable(tableId, col){
 
 window.onload = loadData;
 </script>
-
 </body>
 </html>
