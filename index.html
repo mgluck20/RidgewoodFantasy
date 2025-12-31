@@ -119,6 +119,7 @@ const URL_WEEKLY_BONUSES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-P
 const URL_TRANSACTIONS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR-PpZGo5sHtSw1wlCMdp3hKtL2Mfsop80Au0lr_AiOorIIGX-34lQfq2ZmHNBJq46z5kvaJRBq_hNc/pub?gid=1937108615&single=true&output=csv';
 
 let owners={}, rosters={}, bonuses=[], matchups=[], transactions=[], lastWeek=0;
+let rosterToOwner = {}; // Map roster_id to owner_id
 let debugLog = [];
 
 function addDebug(msg) {
@@ -176,7 +177,20 @@ async function loadData(){
     ownersArray.forEach(o=>owners[o.owner_id]={ display_name:o.display_name||'Unknown', team_name:o.team_name||'Unknown' });
     addDebug(`Owner IDs in map: ${Object.keys(owners).join(', ')}`);
     
-    csvToArray(rostersCsv).forEach(r=>rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) });
+    // Parse rosters and build roster_id to owner_id mapping
+    const rostersArray = csvToArray(rostersCsv);
+    addDebug(`Rosters loaded: ${rostersArray.length} entries`);
+    addDebug(`Roster columns: ${Object.keys(rostersArray[0] || {}).join(', ')}`);
+    addDebug(`First roster sample: ${JSON.stringify(rostersArray[0])}`);
+    
+    rostersArray.forEach(r=>{
+      rosters[r.owner_id]={ ...r, wins:Number(r.wins||0), losses:Number(r.losses||0), ties:Number(r.ties||0), points_for:Number(r.points_for||0) };
+      // Build the roster_id to owner_id mapping
+      if(r.roster_id && r.owner_id) {
+        rosterToOwner[r.roster_id] = r.owner_id;
+      }
+    });
+    addDebug(`Roster-to-Owner mapping: ${JSON.stringify(rosterToOwner)}`);
     
     bonuses = csvToArray(bonusesCsv).map(b=>({...b, week:Number(b.week||0), amount:Number(b.amount||0)}));
     
@@ -259,11 +273,31 @@ function loadStandings(){
 
 function loadMatchups(filterWeek='all'){
   const tbody=document.querySelector('#matchups-table tbody'); tbody.innerHTML='';
-  matchups.filter(m=>filterWeek==='all'||m.week==filterWeek).forEach(m=>{
-    const home=owners[m.home_owner_id]||{ team_name:'Unknown' };
-    const away=owners[m.away_owner_id]||{ team_name:'Unknown' };
+  
+  // Group matchups by week and matchup_id to pair home/away teams
+  const matchupPairs = {};
+  matchups.forEach(m=>{
+    const key = `${m.week}-${m.matchup_id}`;
+    if(!matchupPairs[key]) matchupPairs[key] = [];
+    matchupPairs[key].push(m);
+  });
+  
+  Object.values(matchupPairs).forEach(pair=>{
+    if(pair.length !== 2) return; // Skip if not a valid pair
+    const week = pair[0].week;
+    if(filterWeek!=='all' && week!=filterWeek) return;
+    
+    const team1_roster_id = pair[0].roster_id;
+    const team2_roster_id = pair[1].roster_id;
+    const team1_owner_id = rosterToOwner[team1_roster_id];
+    const team2_owner_id = rosterToOwner[team2_roster_id];
+    
+    const team1=owners[team1_owner_id]||{ team_name:'Unknown' };
+    const team2=owners[team2_owner_id]||{ team_name:'Unknown' };
+    const score = `${pair[0].points} - ${pair[1].points}`;
+    
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${m.week}</td><td>${home.team_name}</td><td>${away.team_name}</td><td>${m.score}</td>`;
+    tr.innerHTML=`<td>${week}</td><td>${team1.team_name}</td><td>${team2.team_name}</td><td>${score}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -271,9 +305,12 @@ function loadMatchups(filterWeek='all'){
 function loadTransactions(filterWeek='all'){
   const tbody=document.querySelector('#transactions-table tbody'); tbody.innerHTML='';
   transactions.filter(t=>filterWeek==='all'||Number(t.week)==filterWeek).forEach(t=>{
-    const owner=owners[t.owner_id]||{ team_name:'Unknown' };
+    // roster_ids might be comma-separated for trades
+    const rosterIds = t.roster_ids ? t.roster_ids.split(',')[0] : '';
+    const ownerId = rosterToOwner[rosterIds];
+    const owner=owners[ownerId]||{ team_name:'Unknown' };
     const tr=document.createElement('tr');
-    const text=t.transaction||t.Action||'N/A';
+    const text=t.type||'N/A';
     const week=Number(t.week)||0;
     tr.innerHTML=`<td>${week}</td><td>${owner.team_name}</td><td>${text}</td>`;
     tbody.appendChild(tr);
