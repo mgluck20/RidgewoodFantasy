@@ -421,7 +421,7 @@ function getPlayerName(id) {
 
 function getTeamName(owner) {
   if (!owner) return 'Unknown';
-  const teamName = owner.team_name && owner.team_name.trim() ? owner.team_name.trim() : '';
+  const teamName = owner.team_name && owner.team_name.trim() && owner.team_name.toLowerCase() !== 'true' ? owner.team_name.trim() : '';
   return teamName || `Team ${owner.display_name || 'Unknown'}`;
 }
 
@@ -497,11 +497,21 @@ function unescapeCSVJson(str) {
   if (!str || str === 'null' || str.trim() === '' || str === '{}' || str === '[]') {
     return null;
   }
+  // Remove outer quotes if present
   str = str.replace(/^"(.*)"$/, '$1');
+  // Unescape doubled quotes
   str = str.replace(/""/g, '"');
+  
   try {
-    return JSON.parse(str);
+    const parsed = JSON.parse(str);
+    // Return null for empty objects/arrays
+    if (typeof parsed === 'object') {
+      if (Array.isArray(parsed) && parsed.length === 0) return null;
+      if (!Array.isArray(parsed) && Object.keys(parsed).length === 0) return null;
+    }
+    return parsed;
   } catch (e) {
+    console.warn('JSON parse failed for:', str.substring(0, 100));
     return null;
   }
 }
@@ -530,20 +540,20 @@ async function loadData() {
     matchups = csvToArray(m).map(row => ({...row, week:+row.week, points:+row.points}));
     
     transactions = csvToArray(t).map(row => {
-      const adds = unescapeCSVJson(row.adds) || {};
-      const drops = unescapeCSVJson(row.drops) || {};
-      const draftPicks = unescapeCSVJson(row.draft_picks) || [];
-      const waiverBudget = unescapeCSVJson(row.waiver_budget) || [];
+      const adds = unescapeCSVJson(row.adds);
+      const drops = unescapeCSVJson(row.drops);
+      const draftPicks = unescapeCSVJson(row.draft_picks);
+      const waiverBudget = unescapeCSVJson(row.waiver_budget);
       
       return {
         week: +row.week || 0,
         type: row.type || 'unknown',
         roster_ids: row.roster_ids ? row.roster_ids.split(',').map(s => s.trim()) : [],
         created: +row.created || 0,
-        adds: adds,
-        drops: drops,
-        draft_picks: Array.isArray(draftPicks) ? draftPicks : [],
-        waiver_budget: Array.isArray(waiverBudget) ? waiverBudget : []
+        adds: adds || {},
+        drops: drops || {},
+        draft_picks: (Array.isArray(draftPicks) ? draftPicks : []),
+        waiver_budget: (Array.isArray(waiverBudget) ? waiverBudget : [])
       };
     }).filter(t => t.week > 0);
     
